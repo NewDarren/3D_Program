@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#092f2b">
+  <meta name="description" content="南洋沐漓｜桂林 · 阳朔 6天5晚轻奢体验之旅">
+  <title>南洋沐漓｜Guilin · Yangshuo 6D5N</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23e7bd59'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='36' font-family='serif' font-weight='700' fill='%230b302c'%3E%E6%B2%90%3C/text%3E%3C/svg%3E">
+  <link rel="preload" href="assets/hero.jpg?v=20260924" as="image">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <header class="topbar" aria-label="Primary navigation">
+    <a class="brand" href="#top" aria-label="南洋沐漓首页">
+      <span class="brand-mark" aria-hidden="true">沐</span>
+      <span class="brand-copy"><b>南洋沐漓</b><small>NANYANG JOURNEY</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面导航">
+      <a href="#moments" data-i18n="navMoments">体验</a>
+      <a href="#route" data-i18n="navRoute">行程</a>
+      <a href="#invitation" data-i18n="navPrice">价格</a>
+    </nav>
+    <div class="lang-switch" role="group" aria-label="Language">
+      <button class="lang-btn is-active" type="button" data-lang="zh" aria-pressed="true">中文</button>
+      <button class="lang-btn" type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-scene" aria-hidden="true">
+        <div class="hero-photo"></div>
+        <div class="sun"></div>
+        <div class="cloud cloud-a"></div>
+        <div class="cloud cloud-b"></div>
+        <div class="mountain mountain-far"></div>
+        <div class="mountain mountain-mid"></div>
+        <div class="mountain mountain-near"></div>
+        <div class="river-plane"><span></span><span></span><span></span></div>
+        <div class="boat"><i></i></div>
+        <div class="hero-vignette"></div>
+        <canvas id="atmosphere"></canvas>
+      </div>
+
+      <div class="hero-content shell">
+        <p class="eyebrow hero-eyebrow" data-i18n="heroEyebrow">NANYANG JOURNEY COMMUNITY</p>
+        <h1 id="hero-title">南洋<span>沐漓</span></h1>
+        <p class="hero-meta" data-i18n="heroMeta">桂林 · 阳朔 6天5晚轻奢体验之旅</p>
+        <p class="hero-line" data-i18n="heroLine">不是去过桂林。<br><strong>是把桂林，活成一段回忆。</strong></p>
+        <p class="hero-description" data-i18n="heroDescription">漓江山水、如意峰云端、夜游神龙、千年溶洞晚宴、Live Band 夜生活……这一次，我们不赶着“看完桂林”，而是慢下来，好好感受桂林。</p>
+        <div class="hero-actions">
+          <a class="button button-gold" href="#moments"><span data-i18n="heroPrimary">先看这趟有什么特别</span><i aria-hidden="true">↘</i></a>
+          <a class="button button-ghost" href="#film"><span class="play-dot" aria-hidden="true">▶</span><span data-i18n="heroSecondary">看1分钟桂林</span></a>
+        </div>
+      </div>
+
+      <div class="scroll-note" aria-hidden="true"><span></span><em>SCROLL TO ENTER</em></div>
+    </section>
+
+    <section class="why section shell" id="why">
+      <div class="section-heading reveal">
+        <p class="eyebrow">WHY GUILIN</p>
+        <h2 data-i18n="whyTitle">为什么一生应该<br>去一次桂林？</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-copy reveal">
+          <p class="lead" data-i18n="whyLead">山在水里，水在画里，<br>人走进山水之间。</p>
+          <p data-i18n="whyBody">桂林最迷人的，是一路都会遇见的喀斯特峰林地貌：漓江、阳朔、如意峰一带，都能看到层层峰林与山水交织。</p>
+          <div class="nature-list" aria-label="桂林特色">
+            <div><span>01</span><b data-i18n="natureMountain">山</b><small data-i18n="natureMountainCopy">喀斯特峰林</small></div>
+            <div><span>02</span><b data-i18n="natureWater">水</b><small data-i18n="natureWaterCopy">漓江山水</small></div>
+            <div><span>03</span><b data-i18n="natureLife">生活</b><small data-i18n="natureLifeCopy">阳朔慢生活</small></div>
+          </div>
+        </div>
+        <div class="photo-stage reveal" data-depth-card>
+          <div class="photo-frame"><img src="assets/river.jpg?v=20260924" alt="桂林漓江山水" loading="lazy"></div>
+          <div class="floating-stamp"><span>桂林</span><small>25.27° N<br>110.29° E</small></div>
+          <div class="photo-caption">KARST<br>LANDSCAPE</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="manifesto section" aria-labelledby="manifesto-title">
+      <div class="manifesto-landscape" aria-hidden="true"></div>
+      <div class="shell manifesto-inner reveal">
+        <p class="eyebrow">THE DIFFERENCE</p>
+        <h2 id="manifesto-title" data-i18n="differenceTitle">去桂林不难。<br><span>难的是，怎么去才值得。</span></h2>
+        <div class="manifesto-copy">
+          <p class="quote" data-i18n="differenceQuote">地点会忘记，<br>体验不会。</p>
+          <p data-i18n="differenceBody">我们不想做另一个“上车—景点—拍照—上车”的普通桂林团。我们更在乎：每一天有没有一个 Moment，几年以后你还记得。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="moments section" id="moments" aria-labelledby="moments-title">
+      <div class="shell">
+        <div class="moments-intro reveal">
+          <div>
+            <p class="eyebrow">6 BONUS EXPERIENCE MOMENTS</p>
+            <h2 id="moments-title" data-i18n="momentsTitle">赠送6大礼包<br><span>精彩 Moment</span></h2>
+          </div>
+          <div class="moments-note">
+            <p data-i18n="momentsBody">不是多送几样东西，而是多送6段值得记住的旅行体验。</p>
+            <strong><small data-i18n="totalValue">总价值</small> RM750</strong>
+          </div>
+        </div>
+
+        <div class="moment-grid">
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/river2.jpg?v=20260924" alt="专业旅拍" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">01</span>
+            <div class="moment-card-copy"><p class="card-icon">◉</p><h3 data-i18n="giftPhoto">全程专业旅拍</h3><p data-i18n="giftPhotoCopy">2–3位摄影师全团跟拍，把朋友、夫妻、家人的笑容真正带回来。</p><b>RM300</b></div>
+          </article>
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/terraces.jpg?v=20260924" alt="溪边野餐体验" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">02</span>
+            <div class="moment-card-copy"><p class="card-icon">✦</p><h3 data-i18n="giftPicnic">溪边野餐体验</h3><p data-i18n="giftPicnicCopy">与大自然亲密接触，让旅程真正慢下来。</p><b>RM60</b></div>
+          </article>
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/dinner.jpg?v=20260924" alt="溶洞红酒私人晚宴" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">03</span>
+            <div class="moment-card-copy"><p class="card-icon">◇</p><h3 data-i18n="giftDinner">溶洞红酒私人晚宴</h3><p data-i18n="giftDinnerCopy">千年溶洞 × 烛光 × 红酒，一场有仪式感的旅行晚宴。</p><b>RM180</b></div>
+          </article>
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/bar.jpg?v=20260924" alt="喜鹊酒馆 Live Band" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">04</span>
+            <div class="moment-card-copy"><p class="card-icon">♫</p><h3 data-i18n="giftBand">喜鹊酒馆 Live Band</h3><p data-i18n="giftBandCopy">白天看山水，晚上听歌、喝一杯，体验桂林夜生活。</p><b>RM80</b></div>
+          </article>
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/afternoon.jpg?v=20260924" alt="梯田下午茶" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">05</span>
+            <div class="moment-card-copy"><p class="card-icon">☼</p><h3 data-i18n="giftTea">梯田下午茶</h3><p data-i18n="giftTeaCopy">田园间的悠闲时光，留一段“不赶时间”的旅程。</p><b>RM50</b></div>
+          </article>
+          <article class="moment-card reveal" data-tilt>
+            <img src="assets/dragon.jpg?v=20260924" alt="夜游神龙巡游" loading="lazy">
+            <div class="card-shade"></div><span class="card-no">06</span>
+            <div class="moment-card-copy"><p class="card-icon">≈</p><h3 data-i18n="giftDragon">夜游神龙巡游</h3><p data-i18n="giftDragonCopy">灯光、龙形巡游与桂林山水交织，晚上的桂林也值得专程记住。</p><b>RM80</b></div>
+          </article>
+        </div>
+
+        <article class="easter-egg reveal" data-depth-card>
+          <img src="assets/sidecar.jpg?v=20260924" alt="十里画廊骑行体验" loading="lazy">
+          <div class="easter-overlay"></div>
+          <div class="easter-copy"><p class="eyebrow">HIDDEN EASTER EGG · 额外惊喜</p><h3 data-i18n="eggTitle">彩蛋福利｜十里画廊骑行体验</h3><p data-i18n="eggBody">这项不算进 RM750 的6大礼包。来到阳朔，不只是坐在车里经过，而是真正走进山水之间。</p></div>
+          <span class="gift-seal">BONUS<br>+1</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="film section" id="film" aria-labelledby="film-title">
+      <div class="shell film-grid">
+        <div class="film-heading reveal">
+          <p class="eyebrow">WATCH GUILIN</p>
+          <h2 id="film-title" data-i18n="filmTitle">打开音乐，<br>用1分钟感受桂林。</h2>
+          <p data-i18n="filmCopy">山水不只适合观看，也适合慢慢听见。</p>
+        </div>
+        <div class="video-frame reveal">
+          <video controls playsinline preload="none" poster="assets/river.jpg?v=20260924">
+            <source src="assets/guilin.mp4" type="video/mp4">
+          </video>
+          <div class="video-label"><span>01:00</span><b data-i18n="filmLabel">桂林精选 · 有音乐</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="route section" id="route" aria-labelledby="route-title">
+      <div class="route-glow" aria-hidden="true"></div>
+      <div class="shell route-intro reveal">
+        <p class="eyebrow">ITINERARY HIGHLIGHTS</p>
+        <h2 id="route-title" data-i18n="routeTitle">沿着漓江，<br>把六天走成一幅画。</h2>
+        <p data-i18n="routeCopy">当然，桂林该看的，我们也不会错过。每一天，只留一个真正值得记住的重点。</p>
+      </div>
+
+      <div class="route-map shell" id="route-map">
+        <svg class="river-route" viewBox="0 0 900 520" role="img" aria-label="六天桂林行程路线">
+          <defs>
+            <linearGradient id="riverGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9c775"/><stop offset=".45" stop-color="#a7cbc2"/><stop offset="1" stop-color="#e9c775"/></linearGradient>
+            <filter id="softGlow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path class="river-shadow" d="M42 90 C180 20 225 210 355 154 C480 100 480 355 612 290 C735 228 745 474 862 424"/>
+          <path id="journeyPath" class="river-line" d="M42 90 C180 20 225 210 355 154 C480 100 480 355 612 290 C735 228 745 474 862 424"/>
+          <g class="route-boat" id="routeBoat"><path d="M-16 2 L16 2 L9 10 L-9 10 Z"/><path d="M0 2 L0 -15 L12 -2 Z"/></g>
+        </svg>
+
+        <div class="route-stop stop-1"><span>01</span><div><h3 data-i18n="day1Title">抵达与初识桂林</h3><p data-i18n="day1Copy">接机 · 入住酒店 · 两江四湖夜景</p></div></div>
+        <div class="route-stop stop-2"><span>02</span><div><h3 data-i18n="day2Title">阳朔画卷与田园慢生活</h3><p data-i18n="day2Copy">元宝岩全景 · 田园下午茶 · 夜游神龙</p></div></div>
+        <div class="route-stop stop-3"><span>03</span><div><h3 data-i18n="day3Title">如意峰与桂林夜生活</h3><p data-i18n="day3Copy">如意峰索道 · 山间步道 · Live Band</p></div></div>
+        <div class="route-stop stop-4"><span>04</span><div><h3 data-i18n="day4Title">城市地标与溶洞晚宴</h3><p data-i18n="day4Copy">象鼻山 · 东西巷 · 千年溶洞私人晚宴</p></div></div>
+        <div class="route-stop stop-5"><span>05</span><div><h3 data-i18n="day5Title">漓江神韵与自然体验</h3><p data-i18n="day5Copy">漓江竹筏 · 古东瀑布 · 山水旅拍</p></div></div>
+        <div class="route-stop stop-6"><span>06</span><div><h3 data-i18n="day6Title">茶香与依依惜别</h3><p data-i18n="day6Copy">桂林文化体验 · 根据航班安排送机</p></div></div>
+      </div>
+    </section>
+
+    <section class="value section" aria-labelledby="value-title">
+      <div class="shell value-grid">
+        <div class="value-title reveal">
+          <p class="eyebrow">RM750 BONUS VALUE</p>
+          <h2 id="value-title" data-i18n="valueTitle">6个精彩 Moment，<br><span>我们直接放进配套里。</span></h2>
+        </div>
+        <div class="receipt reveal">
+          <div class="receipt-top"><span>NANYANG JOURNEY</span><span>NO. 006</span></div>
+          <ul>
+            <li><span data-i18n="giftPhoto">全程专业旅拍</span><b>RM300</b></li>
+            <li><span data-i18n="giftPicnic">溪边野餐体验</span><b>RM60</b></li>
+            <li><span data-i18n="giftDinner">溶洞红酒私人晚宴</span><b>RM180</b></li>
+            <li><span data-i18n="giftBand">喜鹊酒馆 Live Band</span><b>RM80</b></li>
+            <li><span data-i18n="giftTea">梯田下午茶</span><b>RM50</b></li>
+            <li><span data-i18n="giftDragon">夜游神龙巡游</span><b>RM80</b></li>
+          </ul>
+          <div class="receipt-total"><span data-i18n="totalValue">总礼包价值</span><strong>RM750</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="invitation section" id="invitation" aria-labelledby="price-title">
+      <div class="invitation-scene" aria-hidden="true"><div></div><div></div><div></div></div>
+      <div class="shell invitation-inner reveal">
+        <p class="eyebrow">MEMBER INVITATION PRICE</p>
+        <h2 id="price-title" data-i18n="priceTitle">看到这里，<br>再告诉你价格。</h2>
+        <p class="invitation-copy" data-i18n="priceCopy">因为你是由南洋生活家会员邀请的朋友，所以可以享有会员亲友专属礼遇。</p>
+        <div class="price-stack">
+          <div><span data-i18n="marketPrice">市场类似配套</span><del>RM2,499</del></div>
+          <div><span data-i18n="originalPrice">南洋生活家原价</span><del>RM1,899</del></div>
+          <div class="price-feature"><span data-i18n="memberPrice">会员朋友专享</span><strong><small>RM</small>1,399</strong></div>
+        </div>
+        <a class="button button-gold whatsapp-link" href="#" target="_blank" rel="noopener"><span data-i18n="whatsappCta">WhatsApp 查询名额 / 立即报名</span><i aria-hidden="true">↗</i></a>
+        <p class="advisor"><span data-i18n="advisor">你的专属顾问</span>：<b data-referrer>LIM SHI MIN</b></p>
+      </div>
+    </section>
+
+    <section class="proof section" aria-labelledby="proof-title">
+      <div class="shell proof-grid">
+        <div class="proof-copy reveal">
+          <p class="eyebrow">REAL JOURNEY · REAL PEOPLE</p>
+          <p class="big-number">122<span>位</span></p>
+          <h2 id="proof-title" data-i18n="proofTitle">南洋生活家，<br>我们刚刚一起走过云南。</h2>
+          <p data-i18n="proofCopy">旅行配套可以写得很漂亮，但真正重要的是：有没有一群人真的一起出发、一起经历、一起带着回忆回来。</p>
+        </div>
+        <div class="video-frame proof-video reveal">
+          <video controls playsinline preload="none" poster="assets/terraces.jpg?v=20260924">
+            <source src="assets/yunnan.mp4" type="video/mp4">
+          </video>
+          <div class="video-label"><span>REAL</span><b data-i18n="proofLabel">完整云南真实见证</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="faq section" aria-labelledby="faq-title">
+      <div class="shell faq-grid">
+        <div class="reveal"><p class="eyebrow">FAQ</p><h2 id="faq-title" data-i18n="faqTitle">你可能会问</h2></div>
+        <div class="accordion reveal">
+          <article class="faq-item">
+            <button type="button" aria-expanded="false" aria-controls="faq-answer-1"><span data-i18n="faq1q">RM1,399 包含机票吗？</span><i aria-hidden="true"></i></button>
+            <div class="faq-answer" id="faq-answer-1" aria-hidden="true"><p data-i18n="faq1a">不包含国际机票。价格包含当地行程、住宿、交通、指定餐食，以及页面列出的6大体验礼包。</p></div>
+          </article>
+          <article class="faq-item">
+            <button type="button" aria-expanded="false" aria-controls="faq-answer-2"><span data-i18n="faq2q">为什么我可以享有 RM1,399？</span><i aria-hidden="true"></i></button>
+            <div class="faq-answer" id="faq-answer-2" aria-hidden="true"><p data-i18n="faq2a">这是南洋生活家会员朋友专属邀请价格，你通过会员的专属链接进入，因此可享有这项礼遇。</p></div>
+          </article>
+          <article class="faq-item">
+            <button type="button" aria-expanded="false" aria-controls="faq-answer-3"><span data-i18n="faq3q">6大礼包全部包含吗？</span><i aria-hidden="true"></i></button>
+            <div class="faq-answer" id="faq-answer-3" aria-hidden="true"><p data-i18n="faq3a">是的，页面列出的6项精彩 Moment 均已包含；十里画廊骑行则是额外彩蛋福利。</p></div>
+          </article>
+          <article class="faq-item">
+            <button type="button" aria-expanded="false" aria-controls="faq-answer-4"><span data-i18n="faq4q">我要怎样报名？</span><i aria-hidden="true"></i></button>
+            <div class="faq-answer" id="faq-answer-4" aria-hidden="true"><p data-i18n="faq4a">点击 WhatsApp 按钮，系统会自动带上你的推荐会员资料。发送信息后，专属顾问会协助确认日期与名额。</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <div class="closing-scene" aria-hidden="true">
+        <div class="closing-sun"></div><div class="closing-mountain far"></div><div class="closing-mountain near"></div><div class="closing-water"></div>
+      </div>
+      <div class="shell closing-inner reveal">
+        <p class="eyebrow">NEXT JOURNEY</p>
+        <h2 id="closing-title" data-i18n="closingTitle">有些地方，<br>不要一直放在<span>“有一天”。</span></h2>
+        <p data-i18n="closingCopy">南洋沐漓 · 桂林阳朔 6天5晚<br>RM1,399 会员朋友专享 · 不含国际机票</p>
+        <a class="button button-gold whatsapp-link" href="#" target="_blank" rel="noopener"><span data-i18n="closingCta">WhatsApp 立即报名</span><i aria-hidden="true">↗</i></a>
+      </div>
+      <footer><span>南洋生活家 · NANYANG JOURNEY COMMUNITY</span><span>GUILIN 25.27° N / 110.29° E</span></footer>
+    </section>
+  </main>
+
+  <aside class="sticky-cta" aria-label="快速报名">
+    <div><small data-i18n="stickyLabel">会员朋友专享</small><strong>RM1,399</strong></div>
+    <a class="whatsapp-link" href="#" target="_blank" rel="noopener"><span data-i18n="stickyCta">WhatsApp 报名</span><i aria-hidden="true">↗</i></a>
+  </aside>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
