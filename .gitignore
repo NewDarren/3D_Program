@@ -1,0 +1,15 @@
+# Local recovery copies and tool caches are not website deliverables.
+/backups/
+**/node_modules/
+**/__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.key
+/assets/references/cave-restaurant/web-640-backup/

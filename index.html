@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="experience-3d.css?v=20260925-2">
   <link rel="stylesheet" href="journey-3d.css?v=20260925-2">
   <link rel="stylesheet" href="gallery-3d.css?v=20260925-2">
+  <link rel="stylesheet" href="cave-integration.css?v=20260928-2">
   <noscript><style>.reveal{opacity:1!important;transform:none!important}.scene-footer,.time-switch,.journey-tabs,.journey-motion,.lang-switch{display:none!important}.scene-fallback-note{display:block!important}.faq-answer{max-height:none!important;visibility:visible!important;opacity:1!important}</style></noscript>
 </head>
 <body>
@@ -153,10 +154,11 @@
             <div class="card-shade"></div><span class="card-no">02</span>
             <div class="moment-card-copy"><p class="card-icon">✦</p><h3 data-i18n="giftPicnic">溪边野餐体验</h3><p data-i18n="giftPicnicCopy">与大自然亲密接触，让旅程真正慢下来。</p><b>RM60</b></div>
           </article>
-          <article class="moment-card reveal" data-tilt>
+          <article class="moment-card reveal" id="cave-dinner" data-tilt>
             <img src="assets/dinner.jpg?v=20260924" alt="溶洞红酒私人晚宴" loading="lazy">
             <div class="card-shade"></div><span class="card-no">03</span>
             <div class="moment-card-copy"><p class="card-icon">◇</p><h3 data-i18n="giftDinner">溶洞红酒私人晚宴</h3><p data-i18n="giftDinnerCopy">千年溶洞 × 烛光 × 红酒，一场有仪式感的旅行晚宴。</p><b>RM180</b></div>
+            <a class="cave-card-link" href="./cave-dinner-demo/?from=main" aria-label="进入溶洞红酒私人晚宴 3D 场景"></a>
           </article>
           <article class="moment-card reveal" data-tilt>
             <img src="assets/bar.jpg?v=20260924" alt="喜鹊酒馆 Live Band" loading="lazy">
@@ -341,6 +343,7 @@
   <script src="app.js?v=20260925-2" defer></script>
   <script src="scene-3d.js?v=20260925-2" defer></script>
   <script src="journey-3d.js?v=20260925-2" defer></script>
-  <script src="gallery-3d.js?v=20260925-2" defer></script>
+  <script src="gallery-3d.js?v=20260928-3" defer></script>
+  <script src="cave-integration.js?v=20260928-2" defer></script>
 </body>
 </html>

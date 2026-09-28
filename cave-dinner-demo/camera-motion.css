@@ -1,0 +1,7 @@
+#toggle-motion[aria-pressed="true"] { color: #efd294; background: #dfc58e1c; border-radius: 50%; }
+.is-travelling .movement-pad, .is-travelling .tour-button, .is-travelling .overview-tools { visibility: hidden; }
+.is-travelling::after { content: ''; position: fixed; z-index: 30; bottom: 0; left: 0; height: 2px; width: var(--travel-progress, 0%); background: #e4c68c; box-shadow: 0 0 8px #d9b47280; pointer-events: none; }
+.tour-skip { top: 148px; }
+@media(max-width:760px) { .header-actions { gap: 0; } .tour-skip { top: 83px; } }
+@media(max-width:380px) { .header-actions .icon-button, .header-actions .text-button { width: 34px; min-width: 34px; } }
+@media(max-height:520px) { .tour-skip { top: 64px; } }

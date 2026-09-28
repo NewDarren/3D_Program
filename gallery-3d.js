@@ -170,6 +170,11 @@
     item.button = button;
     item.card.append(button);
     item.card.classList.add("has-photo-viewer");
+    // This card has a native full-card 3D link; only its photo button opens the album.
+    if (item.card.querySelector('.cave-card-link')) {
+      button.addEventListener("click", (event) => { event.stopPropagation(); openPhoto(index, button); });
+      return;
+    }
     item.card.setAttribute("aria-haspopup", "dialog");
     item.card.setAttribute("aria-controls", dialog.id);
     if (!item.card.hasAttribute("tabindex")) item.card.tabIndex = 0;

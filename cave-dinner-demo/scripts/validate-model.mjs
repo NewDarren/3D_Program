@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url);
+const validator=require('./validation-tools/node_modules/gltf-validator');
+const path=new URL('../models/cave-restaurant.glb',import.meta.url);
+const bytes=new Uint8Array(await fs.readFile(path));
+const result=await validator.validateBytes(bytes,{uri:'cave-restaurant.glb',maxIssues:200});
+await fs.writeFile(new URL('../models/validation-report.json',import.meta.url),JSON.stringify(result,null,2));
+console.log(JSON.stringify({errors:result.issues.numErrors,warnings:result.issues.numWarnings,infos:result.issues.numInfos,messages:result.issues.messages.slice(0,25)},null,2));
+if(result.issues.numErrors)process.exitCode=1;

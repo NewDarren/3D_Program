@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#122720">
+    <meta name="description" content="走进天然溶洞中的私人晚宴，探索岩壁、餐桌与温暖灯光交织的三维空间。">
+    <title>溶洞红酒私人晚宴 · 南洋沐漓</title>
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./camera-motion.css">
+  </head>
+  <body>
+    <main class="experience" aria-label="溶洞红酒私人晚宴三维体验">
+      <div id="scene-stage" class="scene-stage">
+        <canvas id="scene-canvas" aria-label="岩洞餐厅三维场景。拖动环顾，W A S D 移动，方向键环顾，滚轮缩放。" tabindex="0"></canvas>
+        <div id="scene-fallback" class="scene-fallback" hidden>
+          <img src="./references/01-main-dining.jpg" alt="温暖灯光照亮天然岩壁与溶洞餐厅内的圆桌">
+          <div class="fallback-message"><span>现场一瞥</span><p>当前设备暂时无法打开三维场景。<br>你仍可查看餐厅实拍参考。</p></div>
+        </div>
+        <div class="scene-shade" aria-hidden="true"></div>
+        <div id="hotspot-layer" class="hotspot-layer" aria-label="场景中的探索点"></div>
+      </div>
+
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="南洋沐漓溶洞晚宴体验首页">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="brand-wordmark"><b>南洋沐漓</b><span>NANYANG JOURNEY</span></span>
+        </a>
+        <div class="experience-label"><span class="tiny-dot"></span>阳朔 · 岩洞餐厅<span class="label-rule"></span><span class="label-en">CAVE DINING</span></div>
+        <div class="header-actions">
+          <button id="toggle-motion" class="icon-button" type="button" aria-label="镜头动画" aria-pressed="true" title="开启或关闭镜头过场"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7V5ZM3 7v10"/></svg></button>
+          <button id="open-compare" class="text-button compare-button" type="button" aria-controls="compare-panel" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M9 5H4v14h5m6-14h5v14h-5M7 10l-2 2 2 2m10-4 2 2-2 2"/></svg><span>实拍对照</span></button>
+          <button id="open-reference" class="text-button" type="button" aria-label="实景参考" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 4 4"/></svg><span>实景参考</span></button>
+          <button id="open-help" class="icon-button" type="button" aria-label="查看操作指南" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.7 9a2.4 2.4 0 0 1 4.6 1c0 1.7-2.3 1.8-2.3 3.5"/><path d="M12 16.5h.01"/></svg></button>
+          <button id="fullscreen" class="icon-button" type="button" aria-label="全屏体验"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/></svg></button>
+        </div>
+      </header>
+
+      <section class="intro-panel" aria-labelledby="experience-title">
+        <div class="eyebrow"><span class="eyebrow-line"></span>YANGSHUO · GUANGXI</div>
+        <p class="chapter-label">循光入洞，山中有席。</p>
+        <h1 id="experience-title">溶洞红酒<br><em>私人晚宴</em><span class="title-point" aria-hidden="true">✦</span></h1>
+        <p class="intro-copy">穿过岩壁间的暖光，走近一席晚宴。<br>每一次转身，都有新的风景。</p>
+        <button id="enter-scene" class="enter-button" type="button"><span>进入溶洞</span><span class="enter-arrow" aria-hidden="true">↗</span></button>
+        <div class="intro-meta"><span class="meta-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><span>360° 自由探索 · 从入口走到餐桌</span></div>
+        <div class="intro-footnote"><span>01 / 01</span><span>THE CAVE COLLECTION</span></div>
+      </section>
+
+      <div class="scene-caption" aria-hidden="true"><span class="caption-line"></span><span>NATURAL ROCK.<br>AN EXTRAORDINARY EVENING.</span></div>
+
+      <button id="tour-replay" class="tour-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 9 6-9 6Z"/></svg><span>循光入洞</span><span class="tour-en">GUIDED WALK</span></button>
+      <button id="tour-skip" class="tour-skip" type="button" hidden>跳过引导，开始探索 <span aria-hidden="true">↗</span></button>
+
+      <div class="overview-tools" aria-label="模型查看选项">
+        <button id="toggle-roof" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-6 9 6-9 6-9-6Zm0 5 9 6 9-6"/></svg><span>显示完整洞顶</span></button>
+        <a class="model-download" href="./models/cave-restaurant.glb" download><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></svg><span>下载模型</span></a>
+      </div>
+
+      <aside id="compare-panel" class="compare-panel" aria-labelledby="compare-title" hidden>
+        <div class="compare-heading"><div><span class="eyebrow">A CLOSER LOOK</span><h2 id="compare-title">真实的一刻</h2></div><button id="close-compare" class="icon-button" type="button" aria-label="关闭实拍对照"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <div class="compare-tabs" role="group" aria-label="选择对照机位"><button type="button" data-compare="hall" aria-pressed="true" class="is-active">主厅</button><button type="button" data-compare="aisle" aria-pressed="false">中央通道</button><button type="button" data-compare="entrance" aria-pressed="false">入口</button></div>
+        <figure class="compare-photo"><img id="compare-image" src="./references/09-main-hall.jpg" alt="岩洞餐厅主厅实拍，与三维场景对照"><figcaption><span>REAL PHOTOGRAPH</span><span id="compare-caption">主厅 · 洞顶与桌区</span></figcaption></figure>
+        <p class="compare-note">以实拍为参照，自由环顾对应空间。<span>三维布局包含推估区域。</span></p>
+      </aside>
+      <div class="compare-live-label"><span class="tiny-dot"></span>3D · 同机位参观</div>
+
+      <aside id="detail-panel" class="detail-panel" aria-labelledby="detail-title" hidden>
+        <div class="detail-topline"><span>走近一点 · DISCOVER</span><button id="detail-close" class="icon-button" type="button" aria-label="关闭景点说明"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+        <h2 id="detail-title">天然洞顶</h2><p id="detail-copy"></p>
+      </aside>
+
+      <div class="movement-pad" role="group" aria-label="在餐厅内移动">
+        <span class="movement-label">自由行走</span>
+        <button type="button" data-move="forward" aria-label="向前移动" title="向前移动"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 14 6-6 6 6"/></svg></button>
+        <button type="button" data-move="left" aria-label="向左移动" title="向左移动"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+        <button type="button" data-move="backward" aria-label="向后移动" title="向后移动"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 10 6 6 6-6"/></svg></button>
+        <button type="button" data-move="right" aria-label="向右移动" title="向右移动"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+      </div>
+
+      <footer class="scene-controls">
+        <div class="light-controls control-card" role="group" aria-label="场景灯光">
+          <span class="control-caption">氛围</span>
+          <button type="button" data-light="dinner" class="is-active" aria-pressed="true"><span class="light-swatch dinner-swatch"></span>烛光晚宴</button>
+          <button type="button" data-light="natural" aria-pressed="false"><span class="light-swatch natural-swatch"></span>明亮参观</button>
+        </div>
+        <nav class="view-controls control-card" aria-label="选择参观视角">
+          <button type="button" data-view="entrance" aria-pressed="false"><span class="view-number">01</span>入口</button>
+          <button type="button" data-view="hall" class="is-active" aria-pressed="true"><span class="view-number">02</span>主厅</button>
+          <button type="button" data-view="table" aria-pressed="false"><span class="view-number">03</span>晚宴桌</button>
+          <button type="button" data-view="service" aria-pressed="false"><span class="view-number">04</span>服务区</button>
+          <button type="button" data-view="overview" aria-pressed="false"><span class="view-number">05</span>全景布局</button>
+        </nav>
+        <button id="reset-view" class="reset-button control-card" type="button" aria-label="重置视角"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></svg><span>重置视角</span></button>
+      </footer>
+      <div class="bottom-meta"><span class="view-current"><span class="tiny-dot"></span><span id="view-label" aria-live="polite">主厅 · 山中有席</span></span><span class="gesture-hint">拖动环顾<span>·</span>W A S D 行走<span>·</span>滚轮缩放</span><span id="scene-status" role="status">正在准备场景</span></div>
+
+      <div id="loading" class="loading-screen" role="status" aria-live="polite"><div class="loading-orbit" aria-hidden="true"><span></span></div><span class="loading-brand">CAVE DINING</span><p id="loading-label">正在点亮溶洞里的灯光</p><span class="loading-note">为这一席，慢下来片刻</span></div>
+    </main>
+
+    <dialog id="reference-dialog" class="editorial-dialog reference-dialog" aria-labelledby="reference-title">
+      <div class="dialog-heading"><div><span class="eyebrow">BEHIND THE SCENE</span><h2 id="reference-title">从真实的山洞开始</h2></div><button id="close-reference" class="icon-button" type="button" aria-label="关闭实景参考"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <p class="dialog-intro">阳朔「岩洞餐厅·天然溶洞特色菜（千古情店）」。以同店实拍照片及入口至主厅的视频为参考，重建岩壁、通道与用餐空间。</p>
+      <div class="reference-grid">
+        <figure><img src="./references/01-main-dining.jpg" alt="岩洞餐厅主厅的天然洞顶、圆形餐桌和中央服务区" loading="lazy"><figcaption><span>01</span>主厅与天然洞顶</figcaption></figure>
+        <figure><img src="./references/06-central-walkway.jpg" alt="岩洞餐厅中央通道与两侧餐桌的实拍照片" loading="lazy"><figcaption><span>02</span>通道与用餐空间</figcaption></figure>
+        <figure><img src="./references/09-main-hall.jpg" alt="岩洞餐厅主厅的整体空间和餐桌分布" loading="lazy"><figcaption><span>03</span>主厅布局</figcaption></figure>
+        <figure><img src="./references/11-exterior-entrance.jpg" alt="岩洞餐厅外部入口及山石植被" loading="lazy"><figcaption><span>04</span>山间入口</figcaption></figure>
+      </div>
+      <div class="reference-foot"><p class="reference-note">这是依据实拍资料制作的概念重建，场地尺寸和被遮挡区域为推估；红酒与烛光属于本次晚宴布置。照片保持原始比例与画质。</p><a class="reference-source" href="https://my.trip.com/moments/detail/yangshuo-702-147467854?locale=en-MY" target="_blank" rel="noopener noreferrer">查看实拍视频来源 ↗</a><a class="reference-source" href="./models/cave-restaurant.glb" download>下载完整 3D 模型 ↓</a></div>
+    </dialog>
+
+    <dialog id="help-dialog" class="editorial-dialog help-dialog" aria-labelledby="help-title">
+      <div class="dialog-heading"><div><span class="eyebrow">TAKE A LOOK AROUND</span><h2 id="help-title">用自己的节奏参观</h2></div><button id="close-help" class="icon-button" type="button" aria-label="关闭操作指南"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <dl class="help-list"><div><dt>环顾空间</dt><dd>按住鼠标拖动，或用单指滑动屏幕。点击场景后也可使用方向键环顾。</dd></div><div><dt>自由行走</dt><dd>按 W / A / S / D 移动，或按住画面左下方的方向按钮。靠近岩壁及家具时会自动停下。</dd></div><div><dt>看清细节</dt><dd>滚动鼠标滚轮，或用双指缩放。点击光点，了解岩壁、灯具与晚宴桌。</dd></div><div><dt>看懂布局</dt><dd>选择「全景布局」并拖动旋转。切换洞顶显示，查看完整模型或内部桌区；也可以下载模型。</dd></div><div><dt>对照真实餐厅</dt><dd>点击右上角「实拍对照」，在主厅、中央通道和入口之间切换，对照相应机位的三维画面。</dd></div></dl>
+      <p class="help-note">「循光入洞」可重播入场引导。「重置视角」回到初始位置。按 Esc 关闭说明或弹窗。</p>
+    </dialog>
+    <script type="module" src="./experience.mjs?v=20260928-motion2"></script>
+    <script src="./site-navigation.js?v=20260928-1" defer></script>
+  </body>
+</html>
