@@ -11,7 +11,7 @@ cd D:\MMU\nanyang-3d
 python -m http.server 4174 --bind 127.0.0.1
 ```
 
-然后访问 http://127.0.0.1:4174/?ref=limshimin 。如果 4174 已被占用，可改成 4175 并访问对应端口。静态页面也可通过 VS Code Live Server 预览，无需 npm 安装。
+然后访问 [http://127.0.0.1:4174/?ref=limshimin](https://newdarren.github.io/3D_Program/) 。如果 4174 已被占用，可改成 4175 并访问对应端口。静态页面也可通过 VS Code Live Server 预览，无需 npm 安装。
 
 ## 部署
 
