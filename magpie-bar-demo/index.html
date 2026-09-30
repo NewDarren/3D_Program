@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#171519">
+  <meta name="description" content="走进阳朔西街喜鹊音乐酒馆，探索舞台、卡座与吧台的实时 3D 场景。基于实拍资料的概念重建，部分布局为推估。">
+  <title>喜鹊酒馆 · 今夜有现场 | PICA PICA</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <svg class="icon-library" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 5 5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-fullscreen" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 10a8 8 0 1 1 1 8M4 4v6h6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v5h16v-5"/></symbol>
+    <symbol id="i-roof" viewBox="0 0 24 24"><path d="m2 10 10-7 10 7-10 7-10-7Zm3 5 7 5 7-5"/></symbol>
+    <symbol id="i-motion" viewBox="0 0 24 24"><path d="M3 7h4m-6 5h6m-4 5h4m4-13 10 8-10 8V4Z"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 14 5-5 5 5"/></symbol>
+    <symbol id="i-bird" viewBox="0 0 32 32"><path d="m4 25 11-12 3-8 4-2 3 4 4 1-5 3-4 11-9-2-7 5Zm11-12 5 9M11 20 7 11l8 2"/></symbol>
+  </svg>
+  <main id="scene-stage" aria-label="喜鹊音乐酒馆 3D 参观">
+    <canvas id="scene-canvas" tabindex="0" aria-label="实时 3D 酒馆。拖动环顾，WASD 或方向键移动；按帮助查看完整说明。"></canvas>
+    <div class="scene-vignette" aria-hidden="true"></div>
+    <div id="hotspots" aria-label="场景介绍热点"></div>
+    <div id="fallback" hidden>
+      <img src="../assets/bar.jpg" alt="喜鹊音乐酒馆实拍门面，霓虹招牌与暖色灯串" width="1920" height="1080">
+      <div class="fallback-copy"><p class="eyebrow">PICA PICA · YANGSHUO</p><h1>让现场，稍等一下。</h1><p>当前设备未能启动 3D 画面。请使用支持 WebGL 的浏览器并启用硬件加速，再重新打开页面。</p><a href="../index.html">返回旅程 <svg><use href="#i-arrow"/></svg></a></div>
+    </div>
+  </main>
+  <header class="masthead">
+    <a class="brand" href="../index.html" aria-label="返回南洋沐澜主页"><svg class="brand-bird"><use href="#i-bird"/></svg><span><strong>PICA PICA</strong><small>喜鹊音乐酒馆 · 阳朔西街</small></span></a>
+    <div class="header-actions" aria-label="页面工具">
+      <button id="open-reference" class="icon-button" type="button" title="实景参考" aria-label="查看实景参考"><svg><use href="#i-photo"/></svg><span class="tool-label">实景参考</span></button>
+      <button id="open-help" class="icon-button" type="button" title="操作说明" aria-label="查看操作说明"><svg><use href="#i-info"/></svg></button>
+      <button id="fullscreen" class="icon-button" type="button" title="全屏" aria-label="切换全屏"><svg><use href="#i-fullscreen"/></svg></button>
+    </div>
+  </header>
+  <section id="intro" class="intro" aria-labelledby="intro-title">
+    <p class="eyebrow"><span class="live-dot"></span> WEST STREET · LIVE MUSIC</p>
+    <h1 id="intro-title">喜鹊酒馆<span>今夜有现场。</span></h1>
+    <p class="intro-copy">循着霓虹与歌声，走进西街的夜。<br>选一个座位，让音乐靠近一点。</p>
+    <button id="enter-scene" class="enter-button" type="button"><span>走进酒馆</span><svg><use href="#i-arrow"/></svg></button>
+    <p class="intro-note">可自由探索的 3D 空间</p>
+  </section>
+  <div id="loading" class="loading" role="status" aria-live="polite"><span class="loading-ring" aria-hidden="true"></span><span id="loading-label">正在布置今夜的现场</span></div>
+  <div class="scene-tools" aria-label="场景工具">
+    <button id="toggle-roof" class="pill-button" type="button" aria-pressed="false" hidden><svg><use href="#i-roof"/></svg><span>显示屋顶</span></button>
+    <a class="pill-button model-download" href="./models/magpie-bar.glb" download><svg><use href="#i-download"/></svg><span>下载模型</span></a>
+  </div>
+  <aside id="detail-panel" class="detail-panel" aria-labelledby="detail-title" hidden>
+    <button id="detail-close" class="icon-button" type="button" aria-label="关闭介绍"><svg><use href="#i-close"/></svg></button>
+    <p class="eyebrow">A CLOSER LOOK</p><h2 id="detail-title"></h2><p id="detail-copy"></p>
+  </aside>
+  <div class="movement-pad" aria-label="行走方向控制">
+    <button type="button" data-move="forward" class="move-forward" aria-label="向前移动"><svg><use href="#i-chevron"/></svg></button>
+    <button type="button" data-move="left" class="move-left" aria-label="向左移动"><svg><use href="#i-chevron"/></svg></button>
+    <button type="button" data-move="backward" class="move-backward" aria-label="向后移动"><svg><use href="#i-chevron"/></svg></button>
+    <button type="button" data-move="right" class="move-right" aria-label="向右移动"><svg><use href="#i-chevron"/></svg></button>
+    <span class="movement-caption">W A S D · 移动</span>
+  </div>
+  <footer class="scene-controls">
+    <div class="control-topline">
+      <div class="light-switch" role="group" aria-label="灯光模式"><button type="button" data-light="show" aria-pressed="true"><span class="light-dot show-dot"></span>现场氛围</button><button type="button" data-light="visit" aria-pressed="false"><span class="light-dot visit-dot"></span>明亮参观</button></div>
+      <div class="tour-controls"><button id="tour-skip" class="pill-button skip-button" type="button" hidden>跳过过场 <svg><use href="#i-arrow"/></svg></button><button id="toggle-motion" class="icon-button" type="button" aria-pressed="true" aria-label="切换镜头过场动画" title="镜头过场动画"><svg><use href="#i-motion"/></svg></button><button id="reset-view" class="icon-button" type="button" aria-label="重置视角" title="重置视角"><svg><use href="#i-reset"/></svg></button></div>
+    </div>
+    <nav class="view-navigation" aria-label="前往场景位置">
+      <button type="button" data-view="entrance" aria-pressed="true"><span class="view-number">01</span><span>入口</span></button>
+      <button type="button" data-view="seats" aria-pressed="false"><span class="view-number">02</span><span>卡座</span></button>
+      <button type="button" data-view="stage" aria-pressed="false"><span class="view-number">03</span><span>舞台</span></button>
+      <button type="button" data-view="bar" aria-pressed="false"><span class="view-number">04</span><span>吧台</span></button>
+      <button type="button" data-view="overview" aria-pressed="false"><span class="view-number">05</span><span>全景</span></button>
+    </nav>
+    <div class="scene-footnote"><p id="mode-label">入口 · 西街的夜</p><p id="scene-status" class="sr-only" role="status" aria-live="polite">正在准备场景</p><p class="fidelity-note">基于实拍的概念重建 · 部分布局推估</p></div>
+  </footer>
+  <dialog id="reference-dialog" class="scene-dialog reference-dialog" aria-labelledby="reference-title">
+    <div class="dialog-heading"><div><p class="eyebrow">THE REAL PLACE</p><h2 id="reference-title">从真实的西街出发</h2></div><button id="close-reference" class="icon-button" type="button" aria-label="关闭实景参考"><svg><use href="#i-close"/></svg></button></div>
+    <figure class="reference-photo"><img src="../assets/bar.jpg" alt="原网页喜鹊音乐酒馆实拍门面：PICA PICA BAR 招牌、灯串、植物与露台" width="1920" height="1080" loading="lazy"><figcaption>原网页门面实拍 · 喜鹊音乐酒馆（西街店）</figcaption></figure>
+    <p class="reference-description">场景参考同店的门面、卡座和演出区资料。空间尺寸、部分遮挡区域及区域之间的连接采用合理推估；这里呈现的是可探索的概念重建。</p>
+    <div class="reference-links"><a href="https://hk.trip.com/restaurant/china/yangshuo/detail/restaurant-123002087/" target="_blank" rel="noopener noreferrer"><span>店铺与室内照片<small>Trip.com · PICA PICA BAR</small></span><svg><use href="#i-arrow"/></svg></a><a href="https://www.douyin.com/video/7637530081053695656" target="_blank" rel="noopener noreferrer"><span>现场演出参考<small>抖音 · 喜鹊音乐酒馆</small></span><svg><use href="#i-arrow"/></svg></a></div>
+  </dialog>
+  <dialog id="help-dialog" class="scene-dialog help-dialog" aria-labelledby="help-title">
+    <div class="dialog-heading"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h2 id="help-title">随意走走，慢慢看。</h2></div><button id="close-help" class="icon-button" type="button" aria-label="关闭操作说明"><svg><use href="#i-close"/></svg></button></div>
+    <div class="help-row"><span class="help-index">01</span><div><h3>从一个位置，走向下一个</h3><p>点击下方的入口、卡座、舞台或吧台，镜头会沿通道平滑移动。可以随时切换位置或跳过过场。</p></div></div>
+    <div class="help-row"><span class="help-index">02</span><div><h3>在电脑上探索</h3><p>拖动鼠标自由环顾，用 <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> 或方向键行走，滚轮调整视野。点击场景里的小圆点了解细节。</p></div></div>
+    <div class="help-row"><span class="help-index">03</span><div><h3>在手机上探索</h3><p>单指滑动环顾，按住方向键行走，双指捏合调整视野。横屏也能体验。</p></div></div>
+    <div class="help-row"><span class="help-index">04</span><div><h3>从全景读懂空间</h3><p>选择「全景」，拖动旋转完整模型，滚轮或双指捏合缩放。切换屋顶显示，可查看室内布局。</p></div></div>
+    <p class="help-note">可以切换「现场氛围」与「明亮参观」。系统开启减少动态效果时，镜头默认直接切换。</p>
+  </dialog>
+  <script type="module" src="./experience.mjs"></script>
+</body>
+</html>
