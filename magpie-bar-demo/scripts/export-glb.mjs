@@ -7,6 +7,7 @@ const directory=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const{root,metadata}=await buildBar();
 const{glb,manifest}=await exportSceneToGlb(root,metadata,{assetRoot:directory});
 validateGlb(glb);
+manifest.file='magpie-bar.glb';
 await mkdir(resolve(directory,'models'),{recursive:true});
 await writeFile(resolve(directory,'models/magpie-bar.glb'),glb);
 await writeFile(resolve(directory,'models/scene-manifest.json'),JSON.stringify(manifest,null,2)+'\n');

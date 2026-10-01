@@ -32,8 +32,14 @@ export async function buildBar() {
   m.sign=mat('Illuminated facade lettering',0xffffff,.4,0,{map:signTex,emissiveMap:signTex,emissive:0xffffff,emissiveIntensity:.9});
   m.screen=mat('Stage LED artwork',0xffffff,.5,0,{map:screenTex,emissiveMap:screenTex,emissive:0xffffff,emissiveIntensity:.7});
   m.menu=mat('Table menu',0xffffff,.65,0,{map:tex('table-menu.png')});
-  const mesh=(g,geometry,material,x=0,y=0,z=0,rot=[0,0,0])=>{const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);o.rotation.set(...rot);g.add(o);return o;};
+  const mesh=(g,geometry,material,x=0,y=0,z=0,rot=[0,0,0])=>{
+    // Native Three.js UVs are bottom-origin; embedded glTF images are top-origin.
+    // Bake this into the exported geometry, not a browser-only texture workaround.
+    if(material.map){const uv=geometry.getAttribute('uv');for(let i=0;i<uv.count;i++)uv.setY(i,1-uv.getY(i));}
+    const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);o.rotation.set(...rot);g.add(o);return o;
+  };
   const box=(g,material,x,y,z,w,h,d,rot)=>mesh(g,new THREE.BoxGeometry(w,h,d),material,x,y,z,rot);
+  const lettering=(g,material,x,y,z,w,h,rotation=0)=>mesh(g,new THREE.PlaneGeometry(w,h),material,x,y,z,[0,rotation,0]);
   const cyl=(g,material,x,y,z,r,h,top=r,rot,segments=12)=>mesh(g,new THREE.CylinderGeometry(top,r,h,segments),material,x,y,z,rot);
   const sphere=(g,material,x,y,z,r,scale=[1,1,1])=>{const o=mesh(g,new THREE.SphereGeometry(r,10,7),material,x,y,z);o.scale.set(...scale);return o;};
   const rod=(g,material,a,b,r=.025,segments=8)=>{const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),o=cyl(g,material,...va.clone().add(vb).multiplyScalar(.5).toArray(),r,va.distanceTo(vb),r,undefined,segments);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),vb.sub(va).normalize());return o;};
@@ -57,8 +63,12 @@ export async function buildBar() {
     cyl(g,m.plaster,x,y+.17,z,.22,.34,.28);cyl(g,m.iron,x,y+.342,z,.255,.025);
     for(let i=0;i<9;i++){const angle=i*2.399,end=[x+Math.cos(angle)*.42,y+.35+height*(.5+random()*.5),z+Math.sin(angle)*.42];rod(g,m.green,[x,y+.33,z],end,.012,6);const leaf=sphere(g,i%3?m.green:m.sage,...end,.15,[.5,1.6,.2]);leaf.rotation.set(.4,angle,.6);}
   }
-  function lantern(g,x,y,z){
-    rod(g,m.iron,[x,y+.48,z],[x,4.08,z],.012,6);sphere(g,m.red,x,y,z,.25,[1,1.25,1]);
+  const lanternBodies=[];
+  function lantern(parent,x,y,z){
+    // Attach the upper cap to the lower truss, with no floating gap.
+    rod(parent,m.iron,[x,y+.33,z],[x,3.73,z],.012,6);
+    const g=new THREE.Group();g.name=`Lantern ${lanternBodies.length+1}`;parent.add(g);lanternBodies.push(g);
+    sphere(g,m.red,x,y,z,.25,[1,1.25,1]);
     for(let i=0;i<8;i++){const a=i*Math.PI/4;const points=[];for(let j=0;j<=8;j++){const t=j/8*Math.PI;points.push([x+Math.sin(t)*.254*Math.cos(a),y+Math.cos(t)*.32,z+Math.sin(t)*.254*Math.sin(a)]);}tube(g,m.brass,points,.008);}
     cyl(g,m.brass,x,y+.31,z,.085,.04);cyl(g,m.brass,x,y-.31,z,.085,.04);cyl(g,m.red,x,y-.49,z,.035,.27);sphere(g,m.glow,x,y-.31,z,.055);
   }
@@ -85,7 +95,8 @@ export async function buildBar() {
     for(let z=-8;z<=8;z+=4){box(groups.Walls,m.iron,side*5.8,2.1,z,.16,4.2,.17);box(groups.Walls,m.wall,side*5.7,2.65,z,1e-2,.7,2.55);}
     box(groups.Walls,m.brass,side*5.84,.18,0,.02,.06,18);box(groups.Walls,m.brass,side*5.84,2.31,0,.025,.028,18);
     blossomRun(groups.Decor,side*5.62,0,17,'z',3.17);
-    for(const z of [-6.5,-3,1,5,8])lantern(groups.Decor,side*5.18,2.89,z);
+    // Offset from blossoms; the bar lantern also clears every shelf and bottle.
+    for(const z of [-7,-3,1,5,8])lantern(groups.Decor,side*(side===1&&z===-3?4.45:4.82),2.89,z);
     for(const z of [-2.8,2,6])bird(groups.Decor,side*5.77,2.0,z,-side*Math.PI/2,.56);
   }
   // Roof truss, cross braces, hanging speaker and lighting brackets.
@@ -106,9 +117,11 @@ export async function buildBar() {
     rod(groups.Facade,m.brass,[side*1.49,1.08,9.3],[side*1.49,1.64,9.3],.023);
     plant(groups.Decor,side*2.05,0,10.55,1.3);plant(groups.Decor,side*5.6,0,10.35,1.65);
   }
-  box(groups.Facade,m.wall,0,3.59,9.14,12.3,1.25,.38);box(groups.Facade,m.sign,0,3.59,9.34,8.4,1.14,.035);
+  box(groups.Facade,m.wall,0,3.59,9.14,12.3,1.25,.38);
+  box(groups.Facade,m.iron,0,3.59,9.34,8.45,1.19,.035);
+  lettering(groups.Facade,m.sign,0,3.59,9.359,8.4,1.14);
   box(groups.Facade,m.iron,0,4.3,9.8,13,.15,1.6);box(groups.Facade,m.brass,0,4.18,10.53,13,.045,.04);
-  blossomRun(groups.Decor,0,9.51,12,'x',4.24);
+  blossomRun(groups.Decor,0,10.61,12,'x',3.97);
   for(let i=0;i<=24;i++){const x=-6+i*.5,y=3.9-.27*Math.sin(i/24*Math.PI);if(i<24)rod(groups.Facade,m.iron,[x,y,10.23],[x+.5,3.9-.27*Math.sin((i+1)/24*Math.PI),10.23],.007,5);sphere(groups.Facade,m.glow,x,y-.07,10.23,.034);}
   for(const[x,z,c]of[[-4.2,12,0xbd6076],[-1.8,12.9,0xa39847],[1.5,12,0x568d7c],[4.2,12.7,0xad6883]]){
     const umbrellaMat=mat(`Umbrella ${x}`,c,.8),o=mesh(groups.Decor,new THREE.ConeGeometry(.7,.18,12,1,true),umbrellaMat,x,4.2,z);o.material.side=THREE.DoubleSide;rod(groups.Decor,m.iron,[x,3.97,z],[x,4.38,z],.017);for(let k=0;k<12;k++){const a=k*Math.PI/6;rod(groups.Decor,m.brass,[x,4.29,z],[x+Math.cos(a)*.7,4.11,z+Math.sin(a)*.7],.006,5);}
@@ -123,7 +136,9 @@ export async function buildBar() {
     for(const yy of [.55,.93])rod(g,m.iron,[-1.4,yy,-.968],[1.4,yy,-.968],.006,5);
     box(g,m.wood,0,.715,.18,1.65,.09,1.02);for(const tx of [-.65,.65])for(const tz of [-.17,.52])box(g,m.iron,tx,.35,tz,.048,.70,.048);
     tableLight(g,.5,.76,.28);bottle(g,-.47,.76,.26);glass(g,-.2,.76,-.1);glass(g,.16,.76,.35,true);cyl(g,m.cream,-.47,.777,-.14,.105,.018);
-    box(g,m.menu,.22,.94,-.16,.17,.3,.018,[0,-.12,0]);
+    const menu=new THREE.Group();menu.position.set(.22,.94,-.16);menu.rotation.y=-.12;g.add(menu);
+    box(menu,m.brass,0,0,0,.178,.308,.018);
+    lettering(menu,m.menu,0,0,.01,.17,.3);lettering(menu,m.menu,0,0,-.01,.17,.3,Math.PI);
     const bx=[x-1.45,x+1.45],bz=[z-1.55,z+1.55];obstacles.push({type:'box',minX:bx[0],maxX:bx[1],minZ:bz[0],maxZ:bz[1]});
   }
   for(const z of [-2.9,1.3,5.5])booth(-4.28,z,-1);
@@ -131,7 +146,7 @@ export async function buildBar() {
   // Stage: raised solid platform, practical stairs, backing wall and LED screen.
   box(groups.Stage,m.wood,0,.23,-7.75,9.5,.46,2.55);box(groups.Stage,m.iron,0,.24,-6.46,9.6,.47,.05);box(groups.Stage,m.neon,0,.41,-6.42,9.5,.022,.025);
   box(groups.Stage,m.wood,-4.97,.115,-6.98,.55,.23,.85);
-  box(groups.Stage,m.iron,0,2.5,-8.86,5.65,2.53,.12);box(groups.Stage,m.screen,0,2.5,-8.784,5.5,2.35,.025);
+  box(groups.Stage,m.iron,0,2.5,-8.86,5.65,2.53,.12);lettering(groups.Stage,m.screen,0,2.5,-8.798,5.5,2.35);
   for(const side of [-1,1]){box(groups.Stage,m.black,side*4.35,.89,-7.35,.62,.82,.7);box(groups.Stage,m.iron,side*4.35,.89,-6.99,.51,.69,.025);for(const yy of [.69,1.02])mesh(groups.Stage,new THREE.TorusGeometry(.18,.018,6,18),m.iron,side*4.35,yy,-6.96);}
   // Acoustic drum set with individual rims, cymbals, stands and throne.
   cyl(groups.Stage,m.red,-.5,.89,-7.72,.41,.47,.41,[Math.PI/2,0,0],24);cyl(groups.Stage,m.cream,-.5,.89,-7.46,.38,.015,.38,[Math.PI/2,0,0],24);
@@ -177,13 +192,30 @@ export async function buildBar() {
   }
   // Merge by group + material, preserving all roof/wall geometry in the export.
   root.updateMatrixWorld(true);
+  // Preserve source-space QA before batching removes individual object identities.
+  const lanternBounds=lanternBodies.map(g=>({name:g.name,bounds:new THREE.Box3().setFromObject(g)}));
+  const lanternClearances=[];
+  for(const{name,bounds}of lanternBounds){
+    let minGap=Infinity,nearest='';
+    root.traverse(o=>{
+      if(!o.isMesh)return;
+      for(let p=o.parent;p;p=p.parent)if(lanternBodies.includes(p))return;
+      const b=new THREE.Box3().setFromObject(o);
+      // Hanging cords intentionally touch the cap; exclude narrow vertical supports.
+      const size=b.getSize(new THREE.Vector3());if(size.x<.04&&size.z<.04)return;
+      const gap=Math.hypot(...['x','y','z'].map(a=>Math.max(0,b.min[a]-bounds.max[a],bounds.min[a]-b.max[a])));
+      if(gap<minGap){minGap=gap;nearest=o.material.name;}
+    });
+    lanternClearances.push({name,min:bounds.min.toArray(),max:bounds.max.toArray(),clearance:Number(minGap.toFixed(4)),nearest});
+  }
   for(const group of Object.values(groups)){
     const batches=new Map();group.traverse(o=>{if(!o.isMesh)return;const key=o.material.uuid;if(!batches.has(key))batches.set(key,{material:o.material,geometries:[]});let geo=o.geometry.clone();geo.applyMatrix4(o.matrixWorld);if(geo.index)geo=geo.toNonIndexed();geo.deleteAttribute('uv1');geo.clearGroups();batches.get(key).geometries.push(geo);});
     group.clear();
     for(const{material,geometries}of batches.values()){const merged=mergeVertices(mergeGeometries(geometries,false),.0001);const o=new THREE.Mesh(merged,material);o.name=`${group.name} · ${material.name}`;group.add(o);geometries.forEach(g=>g.dispose());}
   }
   const metadata={
-    name:'喜鹊音乐酒馆 · PICA PICA BAR',version:1,units:'meters (estimated)',
+    name:'喜鹊音乐酒馆 · PICA PICA BAR',version:2,units:'meters (estimated)',
+    geometryQA:{uvOrigin:'top-left',lanternClearances},
     views:{
       entrance:{pos:[0,1.65,13.8],look:[0,2.1,7.4],label:'入口 · 西街的夜'},
       seats:{pos:[-.9,1.65,3.5],look:[-3.5,1.0,1.25],label:'卡座 · 靠近现场'},

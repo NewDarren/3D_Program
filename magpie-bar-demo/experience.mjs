@@ -6,6 +6,7 @@ import { easeCamera, roundWalkingPath } from '../cave-dinner-demo/camera-motion.
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const canvas = $('#scene-canvas'), reduced = matchMedia('(prefers-reduced-motion: reduce)'), mobile = matchMedia('(max-width: 760px)');
 const clamp = THREE.MathUtils.clamp;
+const ASSET_VERSION = '20261001-1';
 let motion = !reduced.matches, override = false;
 try { const v = localStorage.getItem('magpie-motion'); if (v !== null) { motion = v === 'on'; override = true; } } catch {}
 const state = {ready:false,started:false,overview:false,roof:false,view:'entrance',light:'show',yaw:0,pitch:0,animation:null,keys:new Set(),pad:new Set(),pointers:new Map(),dirty:true};
@@ -25,34 +26,38 @@ for(const name of ['reference','help']){
 }
 $('#detail-close').addEventListener('click',()=>{$('#detail-panel').hidden=true;});
 $('#fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else status('请使用浏览器菜单进入全屏');}catch{status('请使用浏览器菜单进入全屏');}});
-const home=document.querySelector('a[href="../index.html"]');
-if(home){const url=new URL(home.href),ref=new URLSearchParams(location.search).get('ref');if(ref)url.searchParams.set('ref',ref);home.href=url.href;}
+const ref=new URLSearchParams(location.search).get('ref');
+for(const home of $$('[data-home-link]')){const url=new URL(home.href);if(ref)url.searchParams.set('ref',ref);url.hash='magpie-bar';home.href=url.href;}
 function resize(){if(!renderer)return;const stage=$('#scene-stage'),w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile.matches?1.15:1.6));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();state.dirty=true;}
 function syncAngles(){euler.setFromQuaternion(camera.quaternion,'YXZ');state.yaw=euler.y;state.pitch=euler.x;}
 function setPose(pose){camera.position.fromArray(pose.pos);camera.lookAt(...pose.look);camera.fov=pose.fov||66;camera.updateProjectionMatrix();syncAngles();state.dirty=true;}
 function quaternion(pose){poseCamera.position.fromArray(pose.pos);poseCamera.lookAt(...pose.look);return poseCamera.quaternion.clone();}
 function begin(){state.started=true;document.body.classList.add('is-started');}
-function shell(){if(roof)roof.visible=!state.overview||state.roof;if(walls)walls.visible=!state.overview||state.roof;$('#toggle-roof').hidden=!state.overview;$('#toggle-roof').setAttribute('aria-pressed',String(state.roof));$('#toggle-roof').textContent=state.roof?'剖开屋顶':'显示完整建筑';state.dirty=true;}
+function shell(){if(roof)roof.visible=!state.overview||state.roof;if(walls)walls.visible=!state.overview||state.roof;$('#toggle-roof').hidden=!state.overview;$('#toggle-roof').setAttribute('aria-pressed',String(state.roof));$('#toggle-roof span').textContent=state.roof?'剖开屋顶':'显示完整建筑';if(renderer)renderer.shadowMap.needsUpdate=true;state.dirty=true;}
 function setOverview(value){state.overview=value;document.body.classList.toggle('is-overview',value);shell();}
 function selected(name){state.view=name;$$('[data-view]').forEach(b=>{const active=b.dataset.view===name;b.classList.toggle('is-active',active);b.setAttribute('aria-pressed',String(active));});$('#mode-label').textContent=manifest.views[name].label;}
 function travelUI(active){document.body.classList.toggle('is-travelling',active);$('#tour-skip').hidden=!active;status(active?'正在前往 · 拖动可接管镜头':state.overview?'拖动旋转 · 滚轮或双指缩放':'拖动环顾 · W A S D / 方向键行走');}
-function orbitFromCamera(){const offset=camera.position.clone().sub(orbit.target);orbit.radius=clamp(offset.length(),8,55);orbit.theta=Math.atan2(offset.x,offset.z);orbit.phi=clamp(Math.acos(offset.y/(offset.length()||1)),.15,1.42);}
+function orbitFromCamera(){const offset=camera.position.clone().sub(orbit.target);orbit.radius=clamp(offset.length(),17,55);orbit.theta=Math.atan2(offset.x,offset.z);orbit.phi=clamp(Math.acos(offset.y/(offset.length()||1)),.15,1.42);}
 function applyOrbit(){camera.position.set(orbit.target.x+orbit.radius*Math.sin(orbit.phi)*Math.sin(orbit.theta),orbit.target.y+orbit.radius*Math.cos(orbit.phi),orbit.target.z+orbit.radius*Math.sin(orbit.phi)*Math.cos(orbit.theta));camera.lookAt(orbit.target);state.dirty=true;}
 function cancelTravel(){if(!state.animation)return;const flight=state.animation.type==='flight';state.animation=null;if(flight){setOverview(true);orbitFromCamera();selected('overview');}syncAngles();travelUI(false);}
 function makePath(points){const distances=[0];for(let i=1;i<points.length;i++)distances.push(distances.at(-1)+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));return{points,distances,length:distances.at(-1)};}
 function samplePath(path,d){for(let i=1;i<path.points.length;i++){if(d<=path.distances[i]){const t=(d-path.distances[i-1])/(path.distances[i]-path.distances[i-1]||1);return{x:THREE.MathUtils.lerp(path.points[i-1].x,path.points[i].x,t),z:THREE.MathUtils.lerp(path.points[i-1].z,path.points[i].z,t)};}}return path.points.at(-1);}
 function walkTo(name,then){
   const pose=manifest.views[name],points=navigator.findPath({x:camera.position.x,z:camera.position.z},{x:pose.pos[0],z:pose.pos[2]});
-  if(!points.length){status('暂时无法到达这个位置，请先返回入口');return;}
+  if(!points.length){travelUI(false);status('暂时无法到达这个位置，请先返回入口');return;}
   const route=makePath(roundWalkingPath(points,navigator));
   if(!motion||route.length<.03){setPose(pose);travelUI(false);then?.();return;}
   state.animation={type:'walk',path:route,duration:clamp(route.length/2.2,1.3,10),time:0,startQ:camera.quaternion.clone(),endQ:quaternion(pose),pose,name,then};travelUI(true);
 }
 function fly(toOverview,groundName='entrance'){
   const pose=manifest.views[toOverview?'overview':'entrance'];setOverview(true);
-  if(!motion){setPose(pose);if(toOverview){orbitFromCamera();selected('overview');}else{setOverview(false);walkTo(groundName);}return;}
-  const start=camera.position.clone(),end=new THREE.Vector3(...pose.pos),high=new THREE.Vector3(0,9,14);
-  const curve=new THREE.CatmullRomCurve3([start,high,end],false,'centripetal');
+  const start=camera.position.clone(),end=new THREE.Vector3(...pose.pos);
+  if(!motion||start.distanceToSquared(end)<.0001){setPose(pose);if(toOverview){orbitFromCamera();selected('overview');travelUI(false);}else{setOverview(false);walkTo(groundName);}return;}
+  const height=Math.max(9,start.y,end.y);
+  // Rise above the building before crossing it, and descend outside the entrance.
+  const waypoints=[start,new THREE.Vector3(start.x,height,start.z),new THREE.Vector3(end.x,height,end.z),end];
+  const distinct=waypoints.filter((p,i)=>!i||p.distanceToSquared(waypoints[i-1])>.0001);
+  const curve=new THREE.CatmullRomCurve3(distinct,false,'centripetal');
   state.animation={type:'flight',curve,time:0,duration:3.7,startQ:camera.quaternion.clone(),endQ:quaternion(pose),pose,toOverview,groundName};travelUI(true);
 }
 function selectView(name,instant=false){
@@ -69,7 +74,7 @@ function updateTravel(dt){
   if(a.type==='flight'){if(a.toOverview){orbitFromCamera();selected('overview');}else{setOverview(false);selected(a.groundName);walkTo(a.groundName);}}else a.then?.();
 }
 function turn(dx,dy){if(!state.ready)return;begin();cancelTravel();if(state.overview){orbit.theta-=dx*.005;orbit.phi=clamp(orbit.phi+dy*.004,.15,1.42);applyOrbit();}else{state.yaw-=dx*.004;state.pitch=clamp(state.pitch-dy*.0035,-1.35,1.35);camera.rotation.set(state.pitch,state.yaw,0,'YXZ');state.dirty=true;}}
-function zoom(delta){if(!state.ready)return;cancelTravel();if(state.overview){orbit.radius=clamp(orbit.radius*Math.exp(delta*.001),10,52);applyOrbit();}else{camera.fov=clamp(camera.fov+delta*.026,43,80);camera.updateProjectionMatrix();state.dirty=true;}}
+function zoom(delta){if(!state.ready)return;cancelTravel();if(state.overview){orbit.radius=clamp(orbit.radius*Math.exp(delta*.001),17,52);applyOrbit();}else{camera.fov=clamp(camera.fov+delta*.026,43,80);camera.updateProjectionMatrix();state.dirty=true;}}
 function movement(dt){
   if(state.overview||state.animation||!state.started)return;
   const forward=Number(state.keys.has('KeyW')||state.keys.has('ArrowUp')||state.pad.has('forward'))-Number(state.keys.has('KeyS')||state.keys.has('ArrowDown')||state.pad.has('backward'));
@@ -136,8 +141,8 @@ function fail(error){console.error('Magpie scene unavailable',error);state.ready
 async function initialize(){
   canvas.dataset.ready='loading';renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x100e16);scene.fog=new THREE.Fog(0x100e16,36,75);camera=new THREE.PerspectiveCamera(66,1,.045,120);environmentMap();addLights();resize();
-  const[data,gltf]=await Promise.all([fetch('./models/scene-manifest.json').then(r=>{if(!r.ok)throw Error(`Manifest ${r.status}`);return r.json();}),new GLTFLoader().loadAsync('./models/magpie-bar.glb',p=>{$('#loading-label').textContent=p.total?`正在打开完整酒馆 · ${Math.round(p.loaded/p.total*100)}%`:'正在打开完整酒馆';})]);
-  manifest=data;navigator=createNavigator({areas:manifest.areas,obstacles:manifest.obstacles,radius:.23,gridStep:.25});model=gltf.scene;scene.add(model);roof=model.getObjectByName('Roof');walls=model.getObjectByName('Walls');
+  const[data,gltf]=await Promise.all([fetch(`./models/scene-manifest.json?v=${ASSET_VERSION}`).then(r=>{if(!r.ok)throw Error(`Manifest ${r.status}`);return r.json();}),new GLTFLoader().loadAsync(`./models/magpie-bar.glb?v=${ASSET_VERSION}`,p=>{const percent=p.total>0?clamp(Math.round(p.loaded/p.total*100),0,100):null;$('#loading-label').textContent=percent===100?'正在准备材质与灯光':percent!==null?`正在打开完整酒馆 · ${percent}%`:'正在打开完整酒馆';})]);
+  manifest=data;orbit.target.fromArray(manifest.views.overview.look);navigator=createNavigator({areas:manifest.areas,obstacles:manifest.obstacles,radius:.23,gridStep:.25});model=gltf.scene;scene.add(model);roof=model.getObjectByName('Roof');walls=model.getObjectByName('Walls');
   const materials=new Set(),aniso=Math.min(renderer.capabilities.getMaxAnisotropy(),mobile.matches?4:8);
   model.traverse(o=>{if(o.isLight){o.visible=false;return;}if(!o.isMesh)return;o.castShadow=!/glass|neon|bloom/i.test(o.name);o.receiveShadow=true;if(o.parent===walls||o.parent?.name==='Facade')occluders.push(o);for(const mat of Array.isArray(o.material)?o.material:[o.material]){if(materials.has(mat))continue;materials.add(mat);for(const value of Object.values(mat))if(value?.isTexture)value.anisotropy=aniso;if(mat.emissive?.getHex()>0)emissives.push({material:mat,base:mat.emissiveIntensity||1});}});
   bindInputs();buildHotspots();setPose(manifest.views.entrance);selected('entrance');shell();lighting(.016);if(renderer.compileAsync)await renderer.compileAsync(scene,camera);renderer.render(scene,camera);renderer.shadowMap.autoUpdate=false;state.ready=true;$('#loading').hidden=true;status('场景已就绪 · 走进喜鹊酒馆');diagnostics();requestAnimationFrame(frame);
