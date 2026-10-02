@@ -1,7 +1,8 @@
 {
   "name": "喜鹊音乐酒馆 · PICA PICA BAR",
-  "version": 2,
+  "version": 3,
   "units": "meters (estimated)",
+  "detailRevision": "20261002-1",
   "geometryQA": {
     "uvOrigin": "top-left",
     "lanternClearances": [
@@ -9,7 +10,7 @@
         "name": "Lantern 1",
         "min": [
           -5.080928325653076,
-          2.2649999946355823,
+          2.259793312978581,
           -7.260928153991699
         ],
         "max": [
@@ -17,14 +18,14 @@
           3.2199999995529653,
           -6.739071846008301
         ],
-        "clearance": 0.3322,
+        "clearance": 0.2976,
         "nearest": "Blossom petals"
       },
       {
         "name": "Lantern 2",
         "min": [
           -5.080928325653076,
-          2.2649999946355823,
+          2.259793312978581,
           -3.260928153991699
         ],
         "max": [
@@ -32,14 +33,14 @@
           3.2199999995529653,
           -2.739071846008301
         ],
-        "clearance": 0.3162,
-        "nearest": "Blossom highlights"
+        "clearance": 0.3006,
+        "nearest": "Blossom petals"
       },
       {
         "name": "Lantern 3",
         "min": [
           -5.080928325653076,
-          2.2649999946355823,
+          2.259793312978581,
           0.739071786403656
         ],
         "max": [
@@ -47,14 +48,14 @@
           3.2199999995529653,
           1.2609281539916992
         ],
-        "clearance": 0.3375,
+        "clearance": 0.3039,
         "nearest": "Blossom petals"
       },
       {
         "name": "Lantern 4",
         "min": [
           -5.080928325653076,
-          2.2649999946355823,
+          2.259793312978581,
           4.739071846008301
         ],
         "max": [
@@ -62,14 +63,14 @@
           3.2199999995529653,
           5.260928153991699
         ],
-        "clearance": 0.2851,
+        "clearance": 0.251,
         "nearest": "Blossom petals"
       },
       {
         "name": "Lantern 5",
         "min": [
           -5.080928325653076,
-          2.2649999946355823,
+          2.259793312978581,
           7.739071846008301
         ],
         "max": [
@@ -77,14 +78,14 @@
           3.2199999995529653,
           8.2609281539917
         ],
-        "clearance": 0.2978,
+        "clearance": 0.2645,
         "nearest": "Blossom highlights"
       },
       {
         "name": "Lantern 6",
         "min": [
           4.559072017669678,
-          2.2649999946355823,
+          2.259793312978581,
           -7.260928153991699
         ],
         "max": [
@@ -92,14 +93,14 @@
           3.2199999995529653,
           -6.739071846008301
         ],
-        "clearance": 0.2927,
+        "clearance": 0.2777,
         "nearest": "Blossom highlights"
       },
       {
         "name": "Lantern 7",
         "min": [
           4.1890716552734375,
-          2.2649999946355823,
+          2.259793312978581,
           -3.260928153991699
         ],
         "max": [
@@ -114,7 +115,7 @@
         "name": "Lantern 8",
         "min": [
           4.559072017669678,
-          2.2649999946355823,
+          2.259793312978581,
           0.739071786403656
         ],
         "max": [
@@ -122,14 +123,14 @@
           3.2199999995529653,
           1.2609281539916992
         ],
-        "clearance": 0.3461,
+        "clearance": 0.3115,
         "nearest": "Blossom petals"
       },
       {
         "name": "Lantern 9",
         "min": [
           4.559072017669678,
-          2.2649999946355823,
+          2.259793312978581,
           4.739071846008301
         ],
         "max": [
@@ -137,14 +138,14 @@
           3.2199999995529653,
           5.260928153991699
         ],
-        "clearance": 0.2497,
+        "clearance": 0.2202,
         "nearest": "Blossom highlights"
       },
       {
         "name": "Lantern 10",
         "min": [
           4.559072017669678,
-          2.2649999946355823,
+          2.259793312978581,
           7.739071846008301
         ],
         "max": [
@@ -152,7 +153,7 @@
           3.2199999995529653,
           8.2609281539917
         ],
-        "clearance": 0.2913,
+        "clearance": 0.2861,
         "nearest": "Dark foliage"
       }
     ]
@@ -173,14 +174,14 @@
     },
     "seats": {
       "pos": [
-        -0.9,
-        1.65,
-        3.5
+        -2.2,
+        1.55,
+        1.3
       ],
       "look": [
-        -3.5,
-        1,
-        1.25
+        -4.08,
+        0.96,
+        1.42
       ],
       "label": "卡座 · 靠近现场"
     },
@@ -407,20 +408,20 @@
   ],
   "format": "glTF 2.0 binary",
   "file": "magpie-bar.glb",
-  "byteLength": 4552872,
+  "byteLength": 6521856,
   "allTexturesEmbedded": true,
   "fullShellIncluded": true,
   "statistics": {
-    "nodes": 74,
-    "meshes": 65,
-    "primitives": 65,
-    "vertices": 111206,
-    "triangles": 107848,
-    "materials": 31,
-    "images": 8,
-    "imageBytes": 274011,
+    "nodes": 81,
+    "meshes": 72,
+    "primitives": 72,
+    "vertices": 140877,
+    "triangles": 169744,
+    "materials": 36,
+    "images": 20,
+    "imageBytes": 911115,
     "lights": 0,
-    "meshInstances": 65
+    "meshInstances": 72
   },
   "approximateModelBounds": {
     "min": [
@@ -442,6 +443,8 @@
   },
   "extensionsUsed": [
     "KHR_materials_emissive_strength",
+    "KHR_materials_transmission",
+    "KHR_materials_volume",
     "KHR_texture_transform"
   ],
   "warnings": []

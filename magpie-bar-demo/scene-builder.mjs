@@ -8,22 +8,30 @@ export async function buildBar() {
   let seed=93026;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
   const tex=(file,repeat=[1,1])=>{const t=new THREE.Texture();t.name=file;t.userData.uri=`textures/${file}`;t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(...repeat);return t;};
   const mat=(name,color,roughness=.65,metalness=0,extra={})=>{const m=new THREE.MeshStandardMaterial({color,roughness,metalness,...extra});m.name=name;return m;};
+  const pbr=(base,repeat=[1,1],normalStrength=.3)=>{
+    const normalMap=tex(`${base}-normal.png`,repeat),arm=tex(`${base}-arm.jpg`,repeat);
+    normalMap.colorSpace=arm.colorSpace=THREE.NoColorSpace;
+    return{normalMap,normalScale:new THREE.Vector2(normalStrength,normalStrength),roughnessMap:arm,metalnessMap:arm,aoMap:arm,aoMapIntensity:.45};
+  };
   const m={
-    wood:mat('Walnut furniture',0xffffff,.48,0,{map:tex('walnut.jpg')}),
-    wall:mat('Dark timber panels',0xffffff,.75,0,{map:tex('dark-timber.jpg',[2,1])}),
-    leather:mat('Black stitched leather',0xffffff,.4,0,{map:tex('leather.jpg',[2,2])}),
-    floor:mat('Ceramic floor tile',0xffffff,.5,0,{map:tex('tiles.jpg',[3,4.5])}),
+    wood:mat('Walnut furniture',0xffffff,1,0,{map:tex('walnut.jpg'),...pbr('walnut',[1,1],.3)}),
+    wall:mat('Dark timber panels',0xffffff,1,0,{map:tex('dark-timber.jpg',[2,1]),...pbr('walnut',[2,1],.25)}),
+    leather:mat('Black stitched leather',0xffffff,1,0,{map:tex('leather.jpg',[2,2]),...pbr('leather',[2,2],.32)}),
+    floor:mat('Ceramic floor tile',0xffffff,1,0,{map:tex('tiles.jpg',[3,4.5]),...pbr('tiles',[3,4.5],.4)}),
     plaster:mat('Charcoal plaster',0xffffff,.93,0,{map:tex('plaster.jpg',[4,4])}),
-    iron:mat('Blackened steel',0x171923,.48,.7), brass:mat('Aged champagne brass',0xaa8752,.3,.72),
-    red:mat('Red silk lanterns',0x931c35,.6,0,{emissive:0x89152e,emissiveIntensity:.22}),
-    pink:mat('Blossom petals',0xc87495,.88),rose:mat('Blossom highlights',0xe6acbb,.85),
+    iron:mat('Blackened steel',0x171923,.48,.7), brass:mat('Aged champagne brass',0xb3996c,1,1,{...pbr('brass',[1,1],.16)}),
+    red:mat('Red silk lanterns',0xffffff,1,0,{map:tex('silk.jpg'),...pbr('silk',[1,1],.22),emissive:0x89152e,emissiveIntensity:.22}),
+    drum:mat('Lacquered burgundy drum shells',0x6c2031,.24,.16),
+    pink:mat('Blossom petals',0xc87495,.88,0,{side:THREE.DoubleSide}),rose:mat('Blossom highlights',0xe6acbb,.85,0,{side:THREE.DoubleSide}),
     green:mat('Dark foliage',0x254d3e,.76),sage:mat('Leaf highlights',0x537858,.73),
     cream:mat('Ivory porcelain',0xe1d7b8,.23), black:mat('Matte black',0x0b0c12,.66),
     chrome:mat('Polished chrome',0x98a3ad,.22,.9),rubber:mat('Drum heads and rubber',0x29262c,.85),
     amber:mat('Amber bottle glass',0x55301b,.18,.2),bottle:mat('Deep green bottle glass',0x183f34,.19,.22),
-    glass:mat('Glassware',0xccdbe1,.1,.28,{transparent:true,opacity:.35,side:THREE.DoubleSide}),
+    glass:Object.assign(new THREE.MeshPhysicalMaterial({color:0xf2fbff,roughness:.08,metalness:0,transmission:.82,thickness:.003,ior:1.5,envMapIntensity:1.25}),{name:'Glassware'}),
+    wine:mat('Ruby wine',0x581323,.15,.05,{transparent:true,opacity:.86}),
+    linen:mat('Natural linen napkin',0xcebfaa,.91),cork:mat('Cork coasters',0x70533b,.9),stitch:mat('Leather piping',0x514741,.72),
     window:mat('Facade glazing',0x7b8d95,.13,.2,{transparent:true,opacity:.18,side:THREE.DoubleSide}),
-    label:mat('Bottle labels',0xded4bb,.7),gravel:mat('Exterior paving',0x69636a,.92),
+    label:mat('Bottle labels',0xffffff,.7,0,{map:tex('bottle-label.png')}),gravel:mat('Exterior paving',0x69636a,.92),
     neon:mat('Rose neon',0xffa1cf,.4,0,{emissive:0xff3f9b,emissiveIntensity:3}),
     cyan:mat('Cyan neon',0xafffed,.4,0,{emissive:0x43d5be,emissiveIntensity:2.4}),
     glow:mat('Warm bulbs',0xffead0,.3,0,{emissive:0xffc078,emissiveIntensity:2.2}),
@@ -35,7 +43,7 @@ export async function buildBar() {
   const mesh=(g,geometry,material,x=0,y=0,z=0,rot=[0,0,0])=>{
     // Native Three.js UVs are bottom-origin; embedded glTF images are top-origin.
     // Bake this into the exported geometry, not a browser-only texture workaround.
-    if(material.map){const uv=geometry.getAttribute('uv');for(let i=0;i<uv.count;i++)uv.setY(i,1-uv.getY(i));}
+    if(material.map||material.normalMap){const uv=geometry.getAttribute('uv');for(let i=0;i<uv.count;i++)uv.setY(i,1-uv.getY(i));}
     const o=new THREE.Mesh(geometry,material);o.position.set(x,y,z);o.rotation.set(...rot);g.add(o);return o;
   };
   const box=(g,material,x,y,z,w,h,d,rot)=>mesh(g,new THREE.BoxGeometry(w,h,d),material,x,y,z,rot);
@@ -44,6 +52,7 @@ export async function buildBar() {
   const sphere=(g,material,x,y,z,r,scale=[1,1,1])=>{const o=mesh(g,new THREE.SphereGeometry(r,10,7),material,x,y,z);o.scale.set(...scale);return o;};
   const rod=(g,material,a,b,r=.025,segments=8)=>{const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),o=cyl(g,material,...va.clone().add(vb).multiplyScalar(.5).toArray(),r,va.distanceTo(vb),r,undefined,segments);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),vb.sub(va).normalize());return o;};
   const tube=(g,material,points,r=.025,closed=false)=>mesh(g,new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)),closed,'centripetal'),Math.max(12,points.length*4),r,6,closed),material);
+  const ring=(g,material,x,y,z,r,t=.002)=>mesh(g,new THREE.TorusGeometry(r,t,5,24),material,x,y,z,[Math.PI/2,0,0]);
   function rounded(g,material,x,y,z,w,h,d,r=.07){
     r=Math.min(r,w/3,h/3,d/3);const shape=new THREE.Shape(),a=-w/2+r,b=-h/2+r;
     shape.moveTo(a-r,b);shape.quadraticCurveTo(a-r,b-r,a,b-r);shape.lineTo(-a,b-r);shape.quadraticCurveTo(-a+r,b-r,-a+r,b);shape.lineTo(-a+r,-b);shape.quadraticCurveTo(-a+r,-b+r,-a,-b+r);shape.lineTo(a,-b+r);shape.quadraticCurveTo(a-r,-b+r,a-r,-b);shape.closePath();
@@ -51,12 +60,25 @@ export async function buildBar() {
   }
   function bottle(g,x,y,z,type=0){
     const material=type%2?m.amber:m.bottle;
-    cyl(g,material,x,y+.13,z,.055,.26,.052,undefined,10);cyl(g,material,x,y+.285,z,.052,.07,.023,undefined,10);cyl(g,material,x,y+.365,z,.023,.09,.023,undefined,10);cyl(g,m.brass,x,y+.418,z,.025,.035,.025,undefined,10);
-    cyl(g,m.label,x,y+.145,z,.056,.10,.056,undefined,10);
+    const profile=[[0,0],[.037,0],[.050,.012],[.055,.035],[.055,.25],[.051,.276],[.035,.297],[.023,.315],[.023,.402],[.025,.407],[.025,.421],[0,.421]];
+    mesh(g,new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(...p)),16),material,x,y,z);
+    cyl(g,m.brass,x,y+.408,z,.026,.035,.026,undefined,16);
+    mesh(g,new THREE.CylinderGeometry(.0555,.0555,.11,16,1,true),m.label,x,y+.145,z);
+    ring(g,m.brass,x,y+.39,z,.0235,.0015);
   }
   function glass(g,x,y,z,wine=false){
-    if(wine){cyl(g,m.glass,x,y+.013,z,.056,.016);cyl(g,m.glass,x,y+.084,z,.01,.14);mesh(g,new THREE.LatheGeometry([new THREE.Vector2(.012,.13),new THREE.Vector2(.045,.15),new THREE.Vector2(.055,.2),new THREE.Vector2(.046,.27)],12),m.glass,x,y,z);}
-    else{mesh(g,new THREE.CylinderGeometry(.052,.039,.17,12,1,true),m.glass,x,y+.085,z);cyl(g,m.amber,x,y+.052,z,.038,.10,.044,undefined,10);}
+    cyl(g,m.cork,x,y+.003,z,.073,.006,.073,undefined,20);y+=.006;
+    if(wine){
+      cyl(g,m.glass,x,y+.007,z,.057,.014,.052,undefined,24);cyl(g,m.glass,x,y+.073,z,.004,.126,.006,undefined,14);
+      const profile=[[.006,.13],[.025,.139],[.047,.16],[.057,.196],[.056,.22],[.047,.278],[.0445,.278],[.0535,.22],[.0545,.196],[.0445,.162],[.023,.143],[.006,.136]];
+      mesh(g,new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(...p)),24),m.glass,x,y,z);
+      mesh(g,new THREE.LatheGeometry([[0,.146],[.024,.146],[.043,.165],[.052,.192],[.052,.208],[0,.208]].map(p=>new THREE.Vector2(...p)),24),m.wine,x,y,z);
+      ring(g,m.glass,x,y+.278,z,.0458,.0016);
+    }else{
+      const profile=[[0,0],[.039,0],[.043,.016],[.054,.18],[.051,.18],[.040,.017],[0,.017]];
+      mesh(g,new THREE.LatheGeometry(profile.map(p=>new THREE.Vector2(...p)),24),m.glass,x,y,z);
+      cyl(g,m.amber,x,y+.066,z,.04,.095,.046,undefined,20);ring(g,m.glass,x,y+.18,z,.0525,.0017);
+    }
   }
   function tableLight(g,x,y,z){cyl(g,m.brass,x,y+.015,z,.11,.03);cyl(g,m.brass,x,y+.17,z,.014,.29);cyl(g,m.glow,x,y+.31,z,.16,.12,.085,undefined,16);cyl(g,m.brass,x,y+.374,z,.088,.015);}
   function plant(g,x,y,z,height=1.2){
@@ -68,9 +90,10 @@ export async function buildBar() {
     // Attach the upper cap to the lower truss, with no floating gap.
     rod(parent,m.iron,[x,y+.33,z],[x,3.73,z],.012,6);
     const g=new THREE.Group();g.name=`Lantern ${lanternBodies.length+1}`;parent.add(g);lanternBodies.push(g);
-    sphere(g,m.red,x,y,z,.25,[1,1.25,1]);
+    const silk=mesh(g,new THREE.SphereGeometry(.25,24,16),m.red,x,y,z);silk.scale.set(1,1.25,1);
     for(let i=0;i<8;i++){const a=i*Math.PI/4;const points=[];for(let j=0;j<=8;j++){const t=j/8*Math.PI;points.push([x+Math.sin(t)*.254*Math.cos(a),y+Math.cos(t)*.32,z+Math.sin(t)*.254*Math.sin(a)]);}tube(g,m.brass,points,.008);}
     cyl(g,m.brass,x,y+.31,z,.085,.04);cyl(g,m.brass,x,y-.31,z,.085,.04);cyl(g,m.red,x,y-.49,z,.035,.27);sphere(g,m.glow,x,y-.31,z,.055);
+    for(let i=0;i<8;i++){const a=i*Math.PI/4;rod(g,m.red,[x+Math.cos(a)*.025,y-.37,z+Math.sin(a)*.025],[x+Math.cos(a)*.038,y-.63,z+Math.sin(a)*.038],.003,5);}
   }
   function bird(g,x,y,z,rotation=0,scale=1){
     const b=new THREE.Group();b.position.set(x,y,z);b.rotation.y=rotation;b.scale.setScalar(scale);g.add(b);
@@ -82,7 +105,14 @@ export async function buildBar() {
     const start=axis==='z'?[x,y,z-length/2]:[x-length/2,y,z],end=axis==='z'?[x,y,z+length/2]:[x+length/2,y,z];rod(g,m.wall,start,end,.055);
     const count=Math.round(length*8);
     for(let i=0;i<count;i++){const offset=(i/count-.5)*length;const px=x+(axis==='x'?offset:(random()-.5)*.36),pz=z+(axis==='z'?offset:(random()-.5)*.36),py=y+(random()-.5)*.2;
-      const o=mesh(g,new THREE.IcosahedronGeometry(.105+random()*.05,0),i%3?m.pink:m.rose,px,py,pz);o.scale.set(1,.7,1);if(i%6===0)rod(g,m.green,[px,py,pz],[px+.07,py-.43,pz+.1],.01,5);
+      const size=.105+random()*.05,flower=new THREE.Group();flower.position.set(px,py,pz);flower.rotation.set(.4*Math.sin(i),i*2.399,.3*Math.cos(i));g.add(flower);
+      for(let p=0;p<5;p++){
+        // Curved petals have actual thickness-free flower surfaces, rather than faceted stones.
+        const geo=new THREE.PlaneGeometry(size*.93,size*1.15,2,2),pos=geo.getAttribute('position');
+        for(let v=0;v<pos.count;v++){const xx=pos.getX(v),yy=pos.getY(v);pos.setXYZ(v,xx*(.75+.25*Math.cos(yy/size*3)),yy+size*.44,.15*size*(xx*xx/(size*size))+.18*yy*yy/size);}
+        geo.computeVertexNormals();const petal=mesh(flower,geo,i%3?m.pink:m.rose);petal.rotation.set(-Math.PI/2,0,p*Math.PI*2/5);
+      }
+      if(i%6===0)rod(g,m.green,[px,py,pz],[px+.07,py-.43,pz+.1],.01,5);
     }
   }
   // Complete building shell, including exterior and reverse faces.
@@ -134,8 +164,13 @@ export async function buildBar() {
     // Quilted back panels, seams and individual metallic buttons.
     for(let i=0;i<8;i++){const bx=-1.25+i*.36;rod(g,m.iron,[bx,.4,-.967],[bx,1.1,-.967],.007,5);sphere(g,m.brass,bx,.76,-.97,.013);}
     for(const yy of [.55,.93])rod(g,m.iron,[-1.4,yy,-.968],[1.4,yy,-.968],.006,5);
-    box(g,m.wood,0,.715,.18,1.65,.09,1.02);for(const tx of [-.65,.65])for(const tz of [-.17,.52])box(g,m.iron,tx,.35,tz,.048,.70,.048);
+    rounded(g,m.wood,0,.715,.18,1.65,.09,1.02,.014);for(const tx of [-.65,.65])for(const tz of [-.17,.52])box(g,m.iron,tx,.35,tz,.048,.70,.048);
+    tube(g,m.stitch,[[-1.39,.49,-.37],[-1.39,.53,-1.03],[1.39,.53,-1.03],[1.39,.49,-.37]],.006);
+    tube(g,m.stitch,[[-1.43,.39,-.975],[-1.43,1.16,-.975],[1.43,1.16,-.975],[1.43,.39,-.975]],.006);
     tableLight(g,.5,.76,.28);bottle(g,-.47,.76,.26);glass(g,-.2,.76,-.1);glass(g,.16,.76,.35,true);cyl(g,m.cream,-.47,.777,-.14,.105,.018);
+    ring(g,m.cream,-.47,.789,-.14,.092,.005);
+    rounded(g,m.linen,-.7,.765,.23,.13,.009,.2,.002);box(g,m.linen,-.7,.773,.23,.025,.006,.2,[0,.08,0]);
+    rod(g,m.chrome,[-.69,.782,.17],[-.69,.782,.3],.005,6);sphere(g,m.chrome,-.69,.785,.33,.014,[.7,.18,1.4]);
     const menu=new THREE.Group();menu.position.set(.22,.94,-.16);menu.rotation.y=-.12;g.add(menu);
     box(menu,m.brass,0,0,0,.178,.308,.018);
     lettering(menu,m.menu,0,0,.01,.17,.3);lettering(menu,m.menu,0,0,-.01,.17,.3,Math.PI);
@@ -149,9 +184,14 @@ export async function buildBar() {
   box(groups.Stage,m.iron,0,2.5,-8.86,5.65,2.53,.12);lettering(groups.Stage,m.screen,0,2.5,-8.798,5.5,2.35);
   for(const side of [-1,1]){box(groups.Stage,m.black,side*4.35,.89,-7.35,.62,.82,.7);box(groups.Stage,m.iron,side*4.35,.89,-6.99,.51,.69,.025);for(const yy of [.69,1.02])mesh(groups.Stage,new THREE.TorusGeometry(.18,.018,6,18),m.iron,side*4.35,yy,-6.96);}
   // Acoustic drum set with individual rims, cymbals, stands and throne.
-  cyl(groups.Stage,m.red,-.5,.89,-7.72,.41,.47,.41,[Math.PI/2,0,0],24);cyl(groups.Stage,m.cream,-.5,.89,-7.46,.38,.015,.38,[Math.PI/2,0,0],24);
+  cyl(groups.Stage,m.drum,-.5,.89,-7.72,.41,.47,.41,[Math.PI/2,0,0],32);cyl(groups.Stage,m.cream,-.5,.89,-7.46,.38,.015,.38,[Math.PI/2,0,0],32);
   mesh(groups.Stage,new THREE.TorusGeometry(.4,.018,6,24),m.chrome,-.5,.89,-7.465);
-  for(const[x,y,z,r]of[[-.91,1.42,-7.88,.23],[-.28,1.43,-7.92,.25],[-1.27,1.02,-8.12,.30],[.23,1.04,-8,.28]]){cyl(groups.Stage,m.red,x,y,z,r,.29,r,undefined,16);cyl(groups.Stage,m.cream,x,y+.154,z,r*.95,.015,undefined,undefined,16);mesh(groups.Stage,new THREE.TorusGeometry(r,.014,6,18),m.chrome,x,y+.161,z,[Math.PI/2,0,0]);rod(groups.Stage,m.chrome,[x,.47,z],[x,y-.15,z],.018);}
+  for(const[x,y,z,r]of[[-.91,1.42,-7.88,.23],[-.28,1.43,-7.92,.25],[-1.27,1.02,-8.12,.30],[.23,1.04,-8,.28]]){
+    cyl(groups.Stage,m.drum,x,y,z,r,.29,r,undefined,24);cyl(groups.Stage,m.cream,x,y+.154,z,r*.95,.015,undefined,undefined,24);
+    for(const yy of [y+.161,y-.15])ring(groups.Stage,m.chrome,x,yy,z,r,.012);
+    for(let i=0;i<8;i++){const a=i*Math.PI/4;rod(groups.Stage,m.chrome,[x+Math.cos(a)*(r+.007),y-.115,z+Math.sin(a)*(r+.007)],[x+Math.cos(a)*(r+.007),y+.135,z+Math.sin(a)*(r+.007)],.008,6);}
+    rod(groups.Stage,m.chrome,[x,.47,z],[x,y-.15,z],.018);
+  }
   for(const[x,z,y]of[[-1.65,-7.5,1.8],[.67,-7.79,1.83],[-.05,-8.4,1.9]]){rod(groups.Stage,m.chrome,[x,.46,z],[x,y,z],.016);for(let k=0;k<3;k++){const a=k*Math.PI*2/3;rod(groups.Stage,m.chrome,[x,.65,z],[x+Math.cos(a)*.3,.46,z+Math.sin(a)*.3],.014);}cyl(groups.Stage,m.brass,x,y,z,.36,.02,.10,undefined,22);}
   cyl(groups.Stage,m.leather,-.6,.91,-8.43,.22,.12);rod(groups.Stage,m.chrome,[-.6,.46,-8.43],[-.6,.85,-8.43],.035);
   // Keyboard with separately modeled keys and a crossed metal support.
@@ -170,6 +210,13 @@ export async function buildBar() {
     tube(groups.Stage,m.black,[[x+.45,1.79,z-.16],[x+.05,.8,z],[x+.03,.49,z],[x+.7,.48,z-.15],[x+1,.48,z-.7]],.007);
   }
   for(const x of [-2,2])box(groups.Stage,m.black,x,.65,-6.67,.65,.3,.38,[-.3,0,0]);
+  // Speaker grilles, electronics controls and pedals remain inside the stage footprint.
+  for(const side of [-1,1])for(let i=0;i<16;i++)box(groups.Stage,m.iron,side*4.35,.56+i*.041,-6.955,.49,.007,.009);
+  for(let i=0;i<5;i++){cyl(groups.Stage,m.chrome,3.03+i*.09,1.468,-7.65,.015,.023,.015,undefined,8);}
+  box(groups.Stage,m.cyan,2.7,1.468,-7.66,.14,.01,.07);
+  rounded(groups.Stage,m.iron,2.74,.496,-7.02,.1,.05,.23,.015);
+  tube(groups.Stage,m.black,[[2.74,.49,-7.1],[2.94,.48,-7.2],[3.19,.48,-7.58],[3.38,1.33,-7.63]],.006);
+  for(const x of [-.14,.14])sphere(guitar,m.brass,x,.39,.069,.024,[1,1,.45]);
   obstacles.push({type:'box',minX:-5.25,maxX:4.9,minZ:-8.98,maxZ:-6.3});
   // Bar, service counter and a layered bottle display. Its position is inferred.
   box(groups.Bar,m.wall,4.55,.58,-3.05,2.1,1.16,4.8);box(groups.Bar,m.wood,4.45,1.19,-3.05,2.35,.13,4.96);
@@ -178,6 +225,7 @@ export async function buildBar() {
   box(groups.Bar,m.iron,5.82,2.0,-3.07,.12,2.4,4.5);
   for(const yy of [1.38,2.05,2.74]){
     box(groups.Bar,m.wood,5.42,yy,-3.1,.86,.06,4.4);box(groups.Bar,m.glow,5.0,yy+.035,-3.1,.016,.014,4.34);
+    for(const z of [-4.8,-3.1,-1.4])rod(groups.Bar,m.iron,[5.8,yy-.29,z],[5.04,yy-.044,z],.014,6);
     for(let i=0;i<16;i++)bottle(groups.Bar,5.43+(i%2)*.13,yy+.035,-5.07+i*.265,i);
   }
   for(const z of [-4.8,-3.5,-2.2]){glass(groups.Bar,3.8,1.26,z);bottle(groups.Bar,4.2,1.26,z,1);cyl(groups.Bar,m.leather,2.78,.78,z,.26,.12);rod(groups.Bar,m.iron,[2.78,0,z],[2.78,.73,z],.045);cyl(groups.Bar,m.iron,2.78,.035,z,.28,.07);}
@@ -214,11 +262,12 @@ export async function buildBar() {
     for(const{material,geometries}of batches.values()){const merged=mergeVertices(mergeGeometries(geometries,false),.0001);const o=new THREE.Mesh(merged,material);o.name=`${group.name} · ${material.name}`;group.add(o);geometries.forEach(g=>g.dispose());}
   }
   const metadata={
-    name:'喜鹊音乐酒馆 · PICA PICA BAR',version:2,units:'meters (estimated)',
+    name:'喜鹊音乐酒馆 · PICA PICA BAR',version:3,units:'meters (estimated)',
+    detailRevision:'20261002-1',
     geometryQA:{uvOrigin:'top-left',lanternClearances},
     views:{
       entrance:{pos:[0,1.65,13.8],look:[0,2.1,7.4],label:'入口 · 西街的夜'},
-      seats:{pos:[-.9,1.65,3.5],look:[-3.5,1.0,1.25],label:'卡座 · 靠近现场'},
+      seats:{pos:[-2.2,1.55,1.3],look:[-4.08,.96,1.42],label:'卡座 · 靠近现场'},
       stage:{pos:[0,1.65,-3.75],look:[0,1.7,-7.85],label:'舞台 · 今夜有现场'},
       bar:{pos:[1.9,1.65,-2.75],look:[5.2,1.55,-3],label:'吧台 · 一杯之间'},
       overview:{pos:[19,19,25],look:[0,0.8,1.4],label:'全景 · 入口、卡座与舞台'},

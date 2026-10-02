@@ -6,13 +6,15 @@ import { easeCamera, roundWalkingPath } from '../cave-dinner-demo/camera-motion.
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const canvas = $('#scene-canvas'), reduced = matchMedia('(prefers-reduced-motion: reduce)'), mobile = matchMedia('(max-width: 760px)');
 const clamp = THREE.MathUtils.clamp;
-const ASSET_VERSION = '20261001-1';
+const ASSET_VERSION = '20261002-1';
+const readyControls='[data-view],[data-move],[data-light],#enter-scene,#toggle-roof,#reset-view,#tour-skip,#toggle-motion';
 let motion = !reduced.matches, override = false;
 try { const v = localStorage.getItem('magpie-motion'); if (v !== null) { motion = v === 'on'; override = true; } } catch {}
 const state = {ready:false,started:false,overview:false,roof:false,view:'entrance',light:'show',yaw:0,pitch:0,animation:null,keys:new Set(),pad:new Set(),pointers:new Map(),dirty:true};
 let renderer,scene,camera,model,manifest,navigator,roof,walls,ambient,hemisphere;
 let previousTime=0,lastRender=0,elapsed=0,lastHotspots=0,lightBlend=0;
-const lights=[],emissives=[],hotspots=[],occluders=[],beams=[];
+const lights=[],emissives=[],hotspots=[],occluders=[],beams=[],glassProfiles=[],sceneTextures=new Set();
+let quality='';
 const orbit={target:new THREE.Vector3(0,.8,0),radius:29,theta:.65,phi:.73};
 const raycaster=new THREE.Raycaster(),projected=new THREE.Vector3(),direction=new THREE.Vector3(),euler=new THREE.Euler(0,0,0,'YXZ'),poseCamera=new THREE.PerspectiveCamera();
 const status = text => { if ($('#scene-status').textContent!==text) $('#scene-status').textContent=text; };
@@ -28,7 +30,18 @@ $('#detail-close').addEventListener('click',()=>{$('#detail-panel').hidden=true;
 $('#fullscreen').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else status('请使用浏览器菜单进入全屏');}catch{status('请使用浏览器菜单进入全屏');}});
 const ref=new URLSearchParams(location.search).get('ref');
 for(const home of $$('[data-home-link]')){const url=new URL(home.href);if(ref)url.searchParams.set('ref',ref);url.hash='magpie-bar';home.href=url.href;}
-function resize(){if(!renderer)return;const stage=$('#scene-stage'),w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile.matches?1.15:1.6));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();state.dirty=true;}
+function controlsReady(ready){$$(readyControls).forEach(b=>b.disabled=!ready);$('#scene-stage').setAttribute('aria-busy',String(!ready));}
+function applyQuality(){
+  const next=mobile.matches?'mobile':'desktop';if(next===quality)return;quality=next;
+  // Refraction adds a second scene pass. Small screens keep the same glass geometry
+  // with a transparent, reflective surface; the original physical settings are restored on resize.
+  renderer.transmissionResolutionScale=.7;
+  for(const profile of glassProfiles){const mat=profile.material;mat.transmission=mobile.matches?0:profile.transmission;mat.opacity=mobile.matches?.22:profile.opacity;mat.transparent=mobile.matches||profile.transparent;mat.depthWrite=mobile.matches?false:profile.depthWrite;mat.needsUpdate=true;}
+  const aniso=Math.min(renderer.capabilities.getMaxAnisotropy(),mobile.matches?4:8);
+  for(const texture of sceneTextures)if(texture.anisotropy!==aniso){texture.anisotropy=aniso;texture.needsUpdate=true;}
+  state.dirty=true;
+}
+function resize(){if(!renderer)return;const stage=$('#scene-stage'),w=Math.max(1,stage.clientWidth),h=Math.max(1,stage.clientHeight);applyQuality();renderer.setPixelRatio(Math.min(devicePixelRatio||1,mobile.matches?1.15:1.6));renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();state.dirty=true;}
 function syncAngles(){euler.setFromQuaternion(camera.quaternion,'YXZ');state.yaw=euler.y;state.pitch=euler.x;}
 function setPose(pose){camera.position.fromArray(pose.pos);camera.lookAt(...pose.look);camera.fov=pose.fov||66;camera.updateProjectionMatrix();syncAngles();state.dirty=true;}
 function quaternion(pose){poseCamera.position.fromArray(pose.pos);poseCamera.lookAt(...pose.look);return poseCamera.quaternion.clone();}
@@ -113,9 +126,11 @@ function updateHotspots(time){
   for(const{button,point}of hotspots){let visible=state.started&&!state.animation&&!state.overview;projected.copy(point).project(camera);visible&&=projected.z>-1&&projected.z<1&&Math.abs(projected.x)<.89&&Math.abs(projected.y)<.78&&point.distanceTo(camera.position)<12;if(visible){direction.subVectors(point,camera.position);const distance=direction.length();raycaster.set(camera.position,direction.normalize());raycaster.far=Math.max(0,distance-.18);visible=!raycaster.intersectObjects(occluders,false).length;}button.hidden=!visible;if(visible){button.style.left=`${(projected.x*.5+.5)*rect.width}px`;button.style.top=`${(-projected.y*.5+.5)*rect.height}px`;}}
 }
 function environmentMap(){
-  const room=new THREE.Scene();room.background=new THREE.Color(0x45404b);room.add(new THREE.Mesh(new THREE.BoxGeometry(22,15,26),new THREE.MeshBasicMaterial({color:0x54464b,side:THREE.BackSide})));
-  for(const[pos,size,color]of[[[-7,3,-4],[3,5],0xffbcb3],[[7,4,-5],[3,5],0xb3bbff],[[0,6,7],[7,2],0xffecd2]]){const p=new THREE.Mesh(new THREE.PlaneGeometry(...size),new THREE.MeshBasicMaterial({color}));p.position.fromArray(pos);p.lookAt(0,1,0);room.add(p);}
-  const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(room,.15).texture;scene.environmentIntensity=.5;pmrem.dispose();room.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
+  const room=new THREE.Scene();room.background=new THREE.Color(0x171419);room.add(new THREE.Mesh(new THREE.BoxGeometry(22,15,26),new THREE.MeshBasicMaterial({color:0x343039,side:THREE.BackSide})));
+  // Broad, neutral softboxes reveal curved glass, brushed metal and timber grain.
+  // Slim brighter strips give glass a readable edge without lifting every dark surface.
+  for(const[pos,size,color,power]of[[[-7,3,-4],[3,5],0xffdcc2,2],[[7,4,-5],[2.2,5],0xdce7ff,1.6],[[0,6,7],[7,2],0xffead6,2.3],[[-3,2,9],[.65,4],0xffeee0,3.4],[[4,2,3],[.45,3.4],0xebf4ff,2.6]]){const p=new THREE.Mesh(new THREE.PlaneGeometry(...size),new THREE.MeshBasicMaterial({color:new THREE.Color(color).multiplyScalar(power)}));p.position.fromArray(pos);p.lookAt(0,1,0);room.add(p);}
+  const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(room,.06).texture;scene.environmentIntensity=.58;pmrem.dispose();room.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});
 }
 function addLights(){
   ambient=new THREE.AmbientLight(0xffe9e0,.32);hemisphere=new THREE.HemisphereLight(0xaec8ff,0x47292d,.72);scene.add(ambient,hemisphere);
@@ -131,21 +146,21 @@ function addLights(){
 const white=new THREE.Color(0xffead6);
 function lighting(dt){
   const target=state.light==='visit'?1:0;lightBlend+=(target-lightBlend)*(reduced.matches?1:1-Math.exp(-dt*4));if(Math.abs(target-lightBlend)<.002)lightBlend=target;
-  ambient.intensity=.32+lightBlend*.8;hemisphere.intensity=.72+lightBlend*1.25;scene.environmentIntensity=.48+lightBlend*.35;renderer.toneMappingExposure=1.02+lightBlend*.08;
+  ambient.intensity=.32+lightBlend*.8;hemisphere.intensity=.72+lightBlend*1.25;scene.environmentIntensity=.58+lightBlend*.32;renderer.toneMappingExposure=1.02+lightBlend*.08;
   lights.forEach(({light,base,color},i)=>{light.color.copy(color).lerp(white,lightBlend*.85);light.intensity=base*(1+lightBlend*.15)*(i<2&&!reduced.matches&&state.light==='show'?1+Math.sin(elapsed*.55+i)*.065:1);});
   emissives.forEach(({material,base})=>{material.emissiveIntensity=base*(1-lightBlend*.55);});beams.forEach(b=>{b.visible=state.light==='show'&&!state.overview;});
 }
-function diagnostics(){Object.assign(canvas.dataset,{ready:'true',view:state.overview?'overview':state.view,light:state.light,animating:state.animation?.type||'false',position:JSON.stringify(camera.position.toArray().map(n=>+n.toFixed(3))),drawCalls:String(renderer.info.render.calls),triangles:String(renderer.info.render.triangles),roofVisible:String(roof?.visible),wallsVisible:String(walls?.visible),motion:String(motion)});}
+function diagnostics(){Object.assign(canvas.dataset,{ready:'true',view:state.overview?'overview':state.view,light:state.light,animating:state.animation?.type||'false',position:JSON.stringify(camera.position.toArray().map(n=>+n.toFixed(3))),drawCalls:String(renderer.info.render.calls),triangles:String(renderer.info.render.triangles),roofVisible:String(roof?.visible),wallsVisible:String(walls?.visible),motion:String(motion),quality,renderScale:String(renderer.getPixelRatio()),glassMode:quality==='mobile'?'reflective':'refractive'});}
 function frame(ms){requestAnimationFrame(frame);if(!state.ready||document.hidden){previousTime=0;return;}const time=ms/1000,dt=previousTime?Math.min(time-previousTime,.05):.016;previousTime=time;elapsed+=dt;if(!$('dialog[open]')){updateTravel(dt);movement(dt);}const dynamic=!reduced.matches&&state.light==='show',changing=Math.abs(lightBlend-(state.light==='visit'?1:0))>.002;if(state.dirty||state.animation||changing||time-lastRender>(dynamic?1/30:1)){lighting(dt);camera.updateMatrixWorld();renderer.render(scene,camera);updateHotspots(time);diagnostics();state.dirty=false;lastRender=time;}}
-function fail(error){console.error('Magpie scene unavailable',error);state.ready=false;canvas.dataset.ready='error';$('#loading').hidden=true;$('#fallback').hidden=false;$$('[data-view],[data-move],[data-light],#enter-scene,#toggle-roof,#reset-view,#tour-skip').forEach(b=>b.disabled=true);status('暂时无法打开三维场景，请刷新或查看实拍参考');}
+function fail(error){console.error('Magpie scene unavailable',error);state.ready=false;canvas.dataset.ready='error';$('#loading').hidden=true;$('#fallback').hidden=false;controlsReady(false);$('#scene-stage').setAttribute('aria-busy','false');status('暂时无法打开三维场景，请刷新或查看实拍参考');}
 async function initialize(){
-  canvas.dataset.ready='loading';renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  canvas.dataset.ready='loading';controlsReady(false);renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   scene=new THREE.Scene();scene.background=new THREE.Color(0x100e16);scene.fog=new THREE.Fog(0x100e16,36,75);camera=new THREE.PerspectiveCamera(66,1,.045,120);environmentMap();addLights();resize();
   const[data,gltf]=await Promise.all([fetch(`./models/scene-manifest.json?v=${ASSET_VERSION}`).then(r=>{if(!r.ok)throw Error(`Manifest ${r.status}`);return r.json();}),new GLTFLoader().loadAsync(`./models/magpie-bar.glb?v=${ASSET_VERSION}`,p=>{const percent=p.total>0?clamp(Math.round(p.loaded/p.total*100),0,100):null;$('#loading-label').textContent=percent===100?'正在准备材质与灯光':percent!==null?`正在打开完整酒馆 · ${percent}%`:'正在打开完整酒馆';})]);
   manifest=data;orbit.target.fromArray(manifest.views.overview.look);navigator=createNavigator({areas:manifest.areas,obstacles:manifest.obstacles,radius:.23,gridStep:.25});model=gltf.scene;scene.add(model);roof=model.getObjectByName('Roof');walls=model.getObjectByName('Walls');
-  const materials=new Set(),aniso=Math.min(renderer.capabilities.getMaxAnisotropy(),mobile.matches?4:8);
-  model.traverse(o=>{if(o.isLight){o.visible=false;return;}if(!o.isMesh)return;o.castShadow=!/glass|neon|bloom/i.test(o.name);o.receiveShadow=true;if(o.parent===walls||o.parent?.name==='Facade')occluders.push(o);for(const mat of Array.isArray(o.material)?o.material:[o.material]){if(materials.has(mat))continue;materials.add(mat);for(const value of Object.values(mat))if(value?.isTexture)value.anisotropy=aniso;if(mat.emissive?.getHex()>0)emissives.push({material:mat,base:mat.emissiveIntensity||1});}});
-  bindInputs();buildHotspots();setPose(manifest.views.entrance);selected('entrance');shell();lighting(.016);if(renderer.compileAsync)await renderer.compileAsync(scene,camera);renderer.render(scene,camera);renderer.shadowMap.autoUpdate=false;state.ready=true;$('#loading').hidden=true;status('场景已就绪 · 走进喜鹊酒馆');diagnostics();requestAnimationFrame(frame);
+  const materials=new Set();
+  model.traverse(o=>{if(o.isLight){o.visible=false;return;}if(!o.isMesh)return;o.castShadow=!/glass|neon|bloom/i.test(o.name);o.receiveShadow=true;if(o.parent===walls||o.parent?.name==='Facade')occluders.push(o);for(const mat of Array.isArray(o.material)?o.material:[o.material]){if(materials.has(mat))continue;materials.add(mat);for(const value of Object.values(mat))if(value?.isTexture)sceneTextures.add(value);if(mat.isMeshPhysicalMaterial&&mat.transmission>0)glassProfiles.push({material:mat,transmission:mat.transmission,opacity:mat.opacity,transparent:mat.transparent,depthWrite:mat.depthWrite});if(mat.emissive?.getHex()>0)emissives.push({material:mat,base:mat.emissiveIntensity||1});}});
+  quality='';applyQuality();bindInputs();buildHotspots();setPose(manifest.views.entrance);selected('entrance');shell();lighting(.016);if(renderer.compileAsync)await renderer.compileAsync(scene,camera);renderer.render(scene,camera);renderer.shadowMap.autoUpdate=false;state.ready=true;controlsReady(true);$('#loading').hidden=true;status('场景已就绪 · 走进喜鹊酒馆');diagnostics();requestAnimationFrame(frame);
 }
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();fail(Error('WebGL context lost'));});
 initialize().catch(fail);
