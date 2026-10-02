@@ -6,7 +6,7 @@ import { easeCamera, roundWalkingPath } from '../cave-dinner-demo/camera-motion.
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const canvas = $('#scene-canvas'), reduced = matchMedia('(prefers-reduced-motion: reduce)'), mobile = matchMedia('(max-width: 760px)');
 const clamp = THREE.MathUtils.clamp;
-const ASSET_VERSION = '20261002-1';
+const ASSET_VERSION = '20261002-2';
 const readyControls='[data-view],[data-move],[data-light],#enter-scene,#toggle-roof,#reset-view,#tour-skip,#toggle-motion';
 let motion = !reduced.matches, override = false;
 try { const v = localStorage.getItem('magpie-motion'); if (v !== null) { motion = v === 'on'; override = true; } } catch {}

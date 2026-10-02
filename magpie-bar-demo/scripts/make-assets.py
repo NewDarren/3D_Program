@@ -30,10 +30,14 @@ def periodic_noise(gx, gy=None):
 
 
 def normal(height, strength):
-    # OpenGL tangent-space normal. V is the image row direction for glTF UVs.
+    # glTF samples the first image row at V=0. Our geometry bakes V=1-v,
+    # so Three's UV-derived bitangent follows increasing image rows, too.
+    # A raised surface normal opposes BOTH height derivatives in that frame.
+    # Do not add the green flip used when an unflipped, bottom-origin UV set
+    # samples an image-row height field: it would turn horizontal grout inward.
     dx = (np.roll(height, -1, axis=1) - np.roll(height, 1, axis=1)) * strength
     dy = (np.roll(height, -1, axis=0) - np.roll(height, 1, axis=0)) * strength
-    vectors = np.stack((-dx, dy, np.ones_like(height)), axis=-1)
+    vectors = np.stack((-dx, -dy, np.ones_like(height)), axis=-1)
     vectors /= np.linalg.norm(vectors, axis=-1)[..., None]
     return (vectors * .5 + .5) * 255
 
